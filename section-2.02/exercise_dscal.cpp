@@ -25,80 +25,78 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "cuda_runtime.h"
+#include "hip/hip_runtime.h"
 
 /* Error checking routine and macro. */
 
-__host__ void myErrorHandler(cudaError_t ifail, const char * file,
-                             int line, int fatal);
+__host__ void myErrorHandler(hipError_t ifail, const char *file, int line,
+                             int fatal);
 
-#define CUDA_ASSERT(call) { myErrorHandler((call), __FILE__, __LINE__, 1); }
-
+#define HIP_ASSERT(call)                                                       \
+  { myErrorHandler((call), __FILE__, __LINE__, 1); }
 
 /* The number of integer elements in the array */
 #define ARRAY_LENGTH 256
 
 /* Suggested kernel parameters */
-#define NUM_BLOCKS  1
+#define NUM_BLOCKS 1
 #define THREADS_PER_BLOCK 256
-
 
 /* Main routine */
 
 int main(int argc, char *argv[]) {
 
-  size_t sz = ARRAY_LENGTH*sizeof(double);
+  size_t sz = ARRAY_LENGTH * sizeof(double);
 
-  double a = 2.0;          /* constant a */
-  double * h_x = NULL;     /* input array (host) */
-  double * h_out = NULL;   /* output array (host) */
-  double * d_x = NULL;     /* array (device) */
+  double a = 2.0;       /* constant a */
+  double *h_x = NULL;   /* input array (host) */
+  double *h_out = NULL; /* output array (host) */
+  double *d_x = NULL;   /* array (device) */
 
-  /* Check we have a GPU, and get device name from the cudaDeviceProp
+  /* Check we have a GPU, and get device name from the hipDeviceProp_t
    * structure. This is for information. */
 
   int ndevice = 0;
   int deviceNum = -1;
-  cudaDeviceProp prop;
+  hipDeviceProp_t prop;
 
-  CUDA_ASSERT( cudaGetDeviceCount(&ndevice) );
+  HIP_ASSERT(hipGetDeviceCount(&ndevice));
 
   if (ndevice == 0) {
-     printf("No GPU available!\n");
-     exit(0);
+    printf("No GPU available!\n");
+    exit(0);
   }
 
-  CUDA_ASSERT( cudaGetDevice(&deviceNum) );
-  CUDA_ASSERT( cudaGetDeviceProperties(&prop, deviceNum) );
+  HIP_ASSERT(hipGetDevice(&deviceNum));
+  HIP_ASSERT(hipGetDeviceProperties(&prop, deviceNum));
   printf("Device %d name: %s\n", deviceNum, prop.name);
   printf("Maximum number of threads per block: %d\n", prop.maxThreadsPerBlock);
 
-
   /* allocate memory on host; assign some initial values */
 
-  h_x   = (double *) malloc(sz);
-  h_out = (double *) malloc(sz);
+  h_x = (double *)malloc(sz);
+  h_out = (double *)malloc(sz);
   assert(h_x);
   assert(h_out);
 
   for (int i = 0; i < ARRAY_LENGTH; i++) {
-    h_x[i] = 1.0*i;
+    h_x[i] = 1.0 * i;
     h_out[i] = 0;
   }
 
   /* allocate memory on device */
 
-  CUDA_ASSERT( cudaMalloc(&d_x, sz) );
+  HIP_ASSERT(hipMalloc(&d_x, sz));
 
   /* copy input array from host to GPU */
 
-  CUDA_ASSERT( cudaMemcpy(d_x, h_x, sz, cudaMemcpyHostToDevice) );
+  HIP_ASSERT(hipMemcpy(d_x, h_x, sz, hipMemcpyHostToDevice));
 
   /* ... kernel will be here  ... */
 
   /* copy the result array back to the host output array */
 
-  CUDA_ASSERT( cudaMemcpy(h_out, d_x, sz, cudaMemcpyDeviceToHost) );
+  HIP_ASSERT(hipMemcpy(h_out, d_x, sz, hipMemcpyDeviceToHost));
 
   /* We can now check the results ... */
   printf("Results:\n");
@@ -107,14 +105,15 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < ARRAY_LENGTH; i++) {
       /* The print statement can be uncommented for debugging... */
       /* printf("%9d %5.2f\n", i, h_out[i]); */
-      if (fabs(h_out[i] - a*h_x[i]) < DBL_EPSILON) ncorrect += 1;
+      if (fabs(h_out[i] - a * h_x[i]) < DBL_EPSILON)
+        ncorrect += 1;
     }
     printf("No. elements %d, and correct: %d\n", ARRAY_LENGTH, ncorrect);
   }
 
   /* free device buffer */
 
-  CUDA_ASSERT( cudaFree(d_x) );
+  HIP_ASSERT(hipFree(d_x));
 
   /* free host buffers */
   free(h_x);
@@ -126,17 +125,18 @@ int main(int argc, char *argv[]) {
 /* It is important to check the return code from API calls, so the
  * follow function/macro allow this to be done concisely as
  *
- *   CUDA_ASSERT(cudaRunTimeAPIFunction(...));
+ *   HIP_ASSERT(hipRunTimeAPIFunction(...));
  *
  * Return codes may be asynchronous, and thus misleading! */
 
-__host__ void myErrorHandler(cudaError_t ifail, const char * file,
-                             int line, int fatal) {
+__host__ void myErrorHandler(hipError_t ifail, const char *file, int line,
+                             int fatal) {
 
-  if (ifail != cudaSuccess) {
+  if (ifail != hipSuccess) {
     fprintf(stderr, "Line %d (%s): %s: %s\n", line, file,
-            cudaGetErrorName(ifail), cudaGetErrorString(ifail));
-    if (fatal) exit(ifail);
+            hipGetErrorName(ifail), hipGetErrorString(ifail));
+    if (fatal)
+      exit(ifail);
   }
 
   return;
