@@ -20,16 +20,17 @@
  * Copyright EPCC, The University of Edinburgh, 2010-2023
  */
 
-#include <assert.h>
-#include <float.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cassert>
+#include <cfloat>
+#include <iostream>
+#include <iomanip>
+#include <string>
 
 #include "hip/hip_runtime.h"
 
 /* Error checking routine and macro. */
 
-__host__ void myErrorHandler(hipError_t ifail, const char *file, int line,
+__host__ void myErrorHandler(hipError_t ifail, const std::string file, int line,
                              int fatal);
 
 #define HIP_ASSERT(call)                                                       \
@@ -63,19 +64,20 @@ int main(int argc, char *argv[]) {
   HIP_ASSERT(hipGetDeviceCount(&ndevice));
 
   if (ndevice == 0) {
-    printf("No GPU available!\n");
-    exit(0);
+    std::cout << "No GPU available!" << std::endl;
+    std::exit(0);
   }
 
   HIP_ASSERT(hipGetDevice(&deviceNum));
   HIP_ASSERT(hipGetDeviceProperties(&prop, deviceNum));
-  printf("Device %d name: %s\n", deviceNum, prop.name);
-  printf("Maximum number of threads per block: %d\n", prop.maxThreadsPerBlock);
+  std::cout << "Device " << deviceNum << " name: " << prop.name << std::endl;
+  std::cout << "Maximum number of threads per block: "
+            << prop.maxThreadsPerBlock << std::endl;
 
   /* allocate memory on host; assign some initial values */
 
-  h_x = (double *)malloc(sz);
-  h_out = (double *)malloc(sz);
+  h_x = new double[ARRAY_LENGTH];
+  h_out = new double[ARRAY_LENGTH];
   assert(h_x);
   assert(h_out);
 
@@ -99,16 +101,19 @@ int main(int argc, char *argv[]) {
   HIP_ASSERT(hipMemcpy(h_out, d_x, sz, hipMemcpyDeviceToHost));
 
   /* We can now check the results ... */
-  printf("Results:\n");
+  std::cout << "Results:" << std::endl;
   {
     int ncorrect = 0;
     for (int i = 0; i < ARRAY_LENGTH; i++) {
       /* The print statement can be uncommented for debugging... */
-      /* printf("%9d %5.2f\n", i, h_out[i]); */
+      // std::cout << std::setw(9) << i << " " << std::fixed
+      //           << std::setprecision(2) << std::setw(5) << h_out[i]
+      //           << std::endl;
       if (fabs(h_out[i] - a * h_x[i]) < DBL_EPSILON)
         ncorrect += 1;
     }
-    printf("No. elements %d, and correct: %d\n", ARRAY_LENGTH, ncorrect);
+    std::cout << "No. elements " << ARRAY_LENGTH
+              << ", and correct: " << ncorrect << std::endl;
   }
 
   /* free device buffer */
@@ -116,8 +121,9 @@ int main(int argc, char *argv[]) {
   HIP_ASSERT(hipFree(d_x));
 
   /* free host buffers */
-  free(h_x);
-  free(h_out);
+
+  delete h_x;
+  delete h_out;
 
   return 0;
 }
@@ -129,14 +135,15 @@ int main(int argc, char *argv[]) {
  *
  * Return codes may be asynchronous, and thus misleading! */
 
-__host__ void myErrorHandler(hipError_t ifail, const char *file, int line,
+__host__ void myErrorHandler(hipError_t ifail, const std::string file, int line,
                              int fatal) {
 
   if (ifail != hipSuccess) {
-    fprintf(stderr, "Line %d (%s): %s: %s\n", line, file,
-            hipGetErrorName(ifail), hipGetErrorString(ifail));
+    std::cerr << "Line " << line << " (" << file
+              << "): " << hipGetErrorName(ifail) << ": "
+              << hipGetErrorString(ifail) << std::endl;
     if (fatal)
-      exit(ifail);
+      std::exit(ifail);
   }
 
   return;
