@@ -21,7 +21,7 @@
  * Copyright EPCC, The University of Edinburgh, 2023
  */
 
-#include <cassert>>
+#include <cassert>
 #include <cfloat>
 #include <iomanip>
 #include <iostream>
