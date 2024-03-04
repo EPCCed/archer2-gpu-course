@@ -1,47 +1,46 @@
 
-# The CUDA/HIP programming model
+# The HIP/CUDA programming model
 
 The application programmer does not want to have to worry about
-the exact disposition of cores/SMs, or whatever, in the hardware.
+the exact disposition of cores/CUs, or whatever, in the hardware.
 An abstraction is wanted.
 
-In CUDA and HIP, this abstraction is based on an hierarchical
+In HIP and CUDA, this abstraction is based on an hierarchical
 organisation of threads.
 
 
 ## Decomposition into threads
 
-If we have a one-dimensional problem, e.g., an array, we can assign
-individual elements to threads.
+If we have a one-dimensional problem, e.g., an array, we can assign individual
+elements to threads.
 
 ![A single thread block in one dimension](../images/ks-threads.jpeg)
 
-Threads are typically executed in groups of 32, known as a *warp*
-(the terminology is borrowed from weaving).
+### Workgroups
 
-
-### Blocks
-
-Groups of threads are further organised into blocks. In our
-one-dimensional picture we may have:
+A *workgroup* (block) is a collection of work-items (or threads) scheduled to
+run on a single Compute Unit (CU). In our one-dimensional picture we may have:
 
 ![Threads and blocks in one dimension](../images/ks-threads-blocks.jpeg)
 
-Blocks are scheduled to SMs.
+A *wavefront*, a subset of a work group, is designated to execute as a single
+SIMD unit. In AMD GPUs, wavefronts commonly consist of 64 threads.
 
-All blocks have the same number of threads per block. Typically
-the maximum number of threads per block is 1024. A value of
-128, 256, and so on is often selected (a whole number of warps).
+Wavefronts are mapped to Compute Units (CU) for execution by the hardware
+scheduler.
+
+Developers typically select the number of wavefronts/workgroup, often based on
+the problem's size.
 
 
 ### Two dimensions
 
-For two-dimensional problems (e.g., images) it is natural to have
-a two-dimensional Cartesian picture:
+For two-dimensional problems (e.g., images) it is natural to have a
+two-dimensional Cartesian picture:
 
 ![Threads and blocks in two dimensions](../images/ks-threads-blocks-grids.jpeg)
 
-The arrangement of blocks is referred to as the *grid* in CUDA.
+The arrangement of workgroups (blocks) is referred to as the *grid*.
 
 CUDA and HIP allow the picture to be extended straightforwardly
 to three dimensions.
@@ -49,66 +48,56 @@ to three dimensions.
 
 ## Programming
 
-NVIDIA developed CUDA in 2005 to make the job of programming
-graphics applications easier. It allows the programmer to
-write familiar C/C++ code which will run on a GPU.
+HIP, developed by AMD, stands for Heterogeneous-compute Interface for
+Portability. It's a runtime API and kernel language implemented in C++. This
+tool enables developers to create applications that are portable across AMD's
+accelerators and CUDA devices alike.
 
-The code divided into "host code" which runs on the host, and
-"device code"  which runs on the GPU. In particular, computational
-kernels should be targeted at the device.
+HIP has two distinct types of source code: Host code and Device code. The Host,
+essentially the CPU, executes the Host code. This code has a typical C++ syntax
+and incorporates standard features. The entry point for execution is the 'main'
+function. Utilizing the HIP API within, Host code facilitates tasks such as
+generating device buffers, managing data transfer between the host and device,
+and initiating the execution of device code.
 
-Host code is standard C/C++ with a number of extensions.
-
-Kernels require a specific "kernel language", which is just a subset
-of C/C++. In particular, support for library functions is limited:
-e.g., only `assert()` and `printf()` may be available.
-
-Kernels may also be written in PTX (parallel thread execution), which
-is the NVIDIA instruction set. Both C/C++ kernels or PTX kernels
-must be compiled to a binary code for execution.
-
+The Device, typically the GPU, executes the Device code. It utilizes a C-like
+syntax, where kernels are used to launch device code. Instructions from the
+Host are queued into streams for execution on the device.
 
 ## Compilation
 
-The NVIDIA compiler driver is `nvcc` (not to be confused with `nvc`
-or `nvc++`). This is provided as part of the NVIDIA HPC Toolkit.
+`hpicc` is a compiler driver utility that calls the AMD LLVM compiler
+`amdclang(++)` (or `nvcc`) to compile HIP code. `hipcc` is included in the AMD
+ROCm Software stack.
 
-CUDA code is often placed in files with the `.cu` extension
+`hipcc` compiles both HIP code for GPU execution and non-HIP code for CPU
+execution, defaulting to AMD LLVM compiler `amdclang(++)`. Other compilers can
+be used for non-HIP code, and object files can be linked accordingly.
+
+Use `hipcc --help` for a list of options. To compile code, use: Eg.
 ```
-$ nvcc code.cu
+$ hipcc -x hip code.cpp
 ```
-Use `nvcc --help` for a list of options. E.g., one may prefer to use more
-standard file extensions as for C:
-```
-$ nvcc -x cu code.c
-```
-where the `-x cu` option instructs `nvcc` to interpret code as CUDA C.
+where the `-x hip` option instructs `hipcc` to interpret code as HIP specific.
+
+To see what `hipcc` passes to the compiler, you can pass the `--verbose` option.
 
 ### Compute capabilities
 
 Different generations of hardware have different capabilities in terms
-of the features they support. This is referred to as compute capability
-or streaming multiprocessor architecture in the NVIDIA jargon.
-
-The most recent NVIDIA hardware supports the following
-
-| Hardware series | Compute capability or "SM" |
-|-----------------|----------------------------|
-| Hopper          | 9                          |
-| Ampere          | 8                          |
-| Volta           | 7                          |
-| Pascal          | 6                          |
+of the features they support.
 
 The consequence is that a program must be compiled for the relevant
 architecture to be able to run. E.g.,
 ```
-$ nvcc -arch=sm_70 code.cu
+$ hipcc --offload-arch=gfx90a -x hip code.cpp
 ```
-will run  on Volta. Minor versions such as `sm_72` also exist.
+will run  on a subset of AMD Radeon Instinct series of accelerators
 
-This should not be confused with the CUDA version. The SM is a hardware
-feature, which the CUDA version is a software issue.
-
+The `--offload-arch=<value>` option enables CUDA offloading device architecture,
+or HIP offloading target ID in the form of a device architecture. The available
+values for AMD accelerators can be found in
+https://llvm.org/docs/AMDGPUUsage.html#processors.
 
 ## Portability: CUDA and HIP
 
@@ -129,7 +118,6 @@ CUDA API routine.
 Not all the latest CUDA functionality is implemented in HIP at any given
 time.
 
-
 ## Summary
 
 The goal for the programmer is to describe the problem in the
@@ -138,9 +126,6 @@ free to schedule work as it sees fit.
 
 This is the basis of the scalable parallelism of the architecture.
 
+The very latest HIP programming guide is well worth a look.
 
-The very latest CUDA programming guide is well worth a look. Note
-there may be some features only supported on the very latest
-hardware (CC) and CUDA version.
-
-https://docs.nvidia.com/cuda/cuda-c-programming-guide/
+https://rocm.docs.amd.com/projects/HIP/en/latest/

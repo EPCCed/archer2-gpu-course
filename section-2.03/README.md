@@ -22,7 +22,7 @@ or eliminate host operations in favour of device operations.
 
 ### Occupancy
 
-Potentially, the GPU has a lot of SMs/cores that can be used. Having very
+Potentially, the GPU has a lot of CUs/cores that can be used. Having very
 many blocks of work available at an one time is said to favour
 high *occupancy*.
 
@@ -60,7 +60,7 @@ This would clearly be poor occupancy.
 
 If we parallelised both loops, we would have 512 x 512 = 262,144 threads
 (1024 blocks). This is much better. We now have a chance to employ many
-SMs.
+CUs.
 
 ## Memory usage
 
@@ -83,7 +83,7 @@ contiguous memory accesses.
 ### GPU: coalescing behaviour
 
 For GPU global memory, the opposite is true. The hardware wants
-to have warps of consecutive threads load consecutive memory
+to have waveforms of consecutive threads load consecutive memory
 locations in a contiguous block.
 
 Consider a one-dimensional example:
@@ -125,7 +125,7 @@ thread making a strided memory access.
 ## Exercise (30 minutes)
 
 The following exercise will examine the issue of paralllem and occupancy.
-The the current directory is a template `exercise_dger.cu` in which you
+The the current directory is a template `exercise_dger.hip.cpp` in which you
 are asked to implement a kernel which computes the following matrix
 operation
 ```
@@ -139,23 +139,22 @@ For the matrix `a` we will adopted a flattened one-dimensional indexing
 for which element row `i` and column `j` is addressed as `a[i*ncol + j]`.
 
 As this is partly a performance issue (a correct answer is also required!)
-we will implement some simple profiling by adding `nvprof` to the submission
+we will implement some simple profiling by adding `rocprof` to the submission
 script.
 
-`nvprof` gives some basic text-based profile information for routines
-involving the GPU at the end of execution. Try to keep a note of the time
-taken by the kernel at each stage (reported in either milliseconds, `ms`,
-or micro seconds, `us` by `nvprof`).
+`rocprof` gives some basic text-based profile information for routines involving
+the GPU at the end of execution. Try to keep a note of the time taken by the
+kernel at each stage (reported in nanoseconds, `ns` by `rocprof`).
 
 
 A suggested procedure is:
 1. Check the template to see that the matrix and vectors have been established
-   in device memory. Note that the template uses the CUDA API call
+   in device memory. Note that the template uses the HIP API call
    ```
-      cudaError_t cudaMemset(void * dptr, int value, size_t sz);
+      hipError_t hipMemset(void * dptr, int value, size_t sizeBytes);
    ```
    to initialise all the device matrix elements to zero directly. The template
-   should compile and run, but will not compute the correct ansswer as the
+   should compile and run, but will not compute the correct answer as the
    kernel stub supplied does nothing.
 2. Implement the most simple kernel in which the update is entirely
    serialised. E.g.,
@@ -196,13 +195,14 @@ A suggested procedure is:
 
 ### Finished?
 
-If we had not used `cudaMemset()` to initialise the device values for
+If we had not used `hipMemset()` to initialise the device values for
 the matrix, what other options to initialise these values on the device
-are available to us? (cudaMemset()` is limited in that it can only be
+are available to us? `hipMemset()` is limited in that it can only be
 used to initialise array values to zero, but not to other, non-zero, values.
 
-For your best effort for the kernel, what is the overhead of the actual
-kernel launch (`cudaLaunchKernel` in the profile) compared with the
-time taken for the kernel itself?
+For your best effort for the kernel, what is the overhead of the actual kernel
+launch (`hipLaunchKernel` in the profile) compared with the time taken for the
+kernel itself? These can be found in `results.stats.csv` and
+`results.hip_stats.csv`, or in `results.json`.
 
 What's the overhead for the host-device transfers?
