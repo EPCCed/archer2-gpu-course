@@ -12,26 +12,26 @@ independent iterations between threads in parallel.
 
 Consider the following loop in C:
 ```
-for (int i = 0; i < ARRAY_LENGTH; i++) {
-  result[i] = 2*i;
-}
+  for (int i = 0; i < ARRAY_LENGTH; i++) {
+    result[i] = 2*i;
+  }
 ```
 As each iteration of the loop is independent, we can safely
 attempt to run each iteration in parallel.
 
-In CUDA, we would we need to take two steps. First, we write
+In HIP, we would we need to take two steps. First, we write
 a kernel function which expresses the body of the loop:
 ```
-__global__ void myKernel(int * result) {
+  __global__ void myKernel(int *result) {
 
-  int i = threadIdx.x;
+    int i = threadIdx.x;
 
-  result[i] = 2*i;
-}
+    result[i] = 2*i;
+  }
 ```
 The `__global__` is a so-called execution space qualifier and
 indicates to the compiler that this is an entry point for
-GPU execution. The `threadIdx.x` is a special variable that CUDA
+GPU execution. The `threadIdx.x` is a special variable that HIP
 provides to allow us to identify the thread.
 
 The second step is to execute, or *launch*, the kernel on the GPU.
@@ -69,11 +69,11 @@ constructors.
 If we want to have a large problem, we need more blocks. Usually, for
 a large array, we want very many blocks, e.g.,
 ```
-__global__ void myKernel(int * result) {
+  __global__ void myKernel(int *result) {
 
-  int i = blockIdx.x*blockDim.x + threadIdx.x;
-  result[i] = 2*i;
-}
+    int i = blockIdx.x*blockDim.x + threadIdx.x;
+    result[i] = 2*i;
+  }
 ```
 would could have execution configuration
 ```
@@ -93,18 +93,18 @@ divisible by `THREADS_PER_BLOCK`.
 
 ### Internal variables in the kernel
 
-A number of internal variables are made available by the CUDA
+A number of internal variables are made available by the HIP
 runtime and can be used in the kernel to locate a given
 thread's position in the abstract grid picture:
 ```
-   dim3 gridDim;     /* The number of blocks */
-   dim3 blockDim;    /* The number of threads per block */
+  dim3 gridDim;     /* The number of blocks */
+  dim3 blockDim;    /* The number of threads per block */
 
-   /* Unique to each block: */
-   dim3 blockIdx;    /* 0 <= blockIdx.x < gridDim.x  etc. for y,z */
+  /* Unique to each block: */
+  dim3 blockIdx;    /* 0 <= blockIdx.x < gridDim.x  etc. for y,z */
 
-   /* Unique to each thread (within a block): */
-   dim3 threadIdx;   /* 0 <= threadIdx.x < blockDim.x  etc. for y,z */
+  /* Unique to each thread (within a block): */
+  dim3 threadIdx;   /* 0 <= threadIdx.x < blockDim.x  etc. for y,z */
 ```
 These names should be considered reserved.
 
@@ -120,7 +120,7 @@ completed, we need synchronisation.
 
   /* ... returns immediately */
 
-  cudaErr_t err = cudaDeviceSynchronize();
+  hipError_t err = hipDeviceSynchronize();
 
   /* ... it is now safe to use the results of the kernel ... */
 ```
@@ -132,19 +132,19 @@ Errors occurring in the kernel execution are also asynchronous, which
 can cause some confusion. As a result, one will sometimes see this
 usage:
 ```
-   myKernel<<< blocks, threadsPerBlock >>>{arg1, arg2, arg3);
+  myKernel<<< blocks, threadsPerBlock >>>(arg1, arg2, arg3);
 
-   CUDA_ASSERT( cudaPeekAtLastError() );
-   CUDA_ASSERT( cudaDeviceSynchronize() );
+  HIP_ASSERT( hipPeekAtLastError() );
+  HIP_ASSERT( hipDeviceSynchronize() );
 ```
 
-The first function, `cudaPeekAtLastError()`, queries the error state
+The first function, `hipPeekAtLastError()`, queries the error state
 without altering it, and will fail if there are errors in the kernel
 launch (e.g., the GPU is not available, or there are errors
 in the configuration).
 
 Errors that occur during the execution of the kernel itself will not
-be apparent until `cudaDeviceSynchronize()`. This may typically be
+be apparent until `hipDeviceSynchronize()`. This may typically be
 a programmer error which will need to be debugged.
 
 
@@ -161,7 +161,7 @@ part in this directory.
 
 1. Write a kernel of the prototype
 ```
-__global__ void myKernel(double a, double * x);
+  __global__ void myKernel(double a, double *x);
 ```
 to perform the scale operation on a given element of the array.
 Limit yourself to one block in the first instance (you only
@@ -213,19 +213,22 @@ unchanged. Both vectors have length `nlen`.
 
 
 **Expert point**. If you are not keen on the non-standard looking execution
-configuration ```<<<...>>>```, one can also use the C++ API function
-`cudaLaunchKernel()`. However, this is slightly more awkward.
+configuration ```<<<...>>>```, one can also use the `hipLaunchKernelGGL()`
+macro. However, this is slightly more awkward.
 
 The prototype expected is:
 ```
-  cudaErr_t cudaLaunchKernel(const void * func, dim3 blocks, dim3 threads, void ** args, ...);
+  hipError_t hipLaunchKernel(const void *func, dim3 blocks, dim3 threads, 
+                            size_t dynamicShared, hipStream_t stream, args...);
 ```
-where only the first 4 arguments are required. The kernel function is `func`, while
-the second and third arguments are the number of blocks and threads per block
-(taking the place of the execution configuration). The fourth argument holds the
-kernel parameters. Hint: for our first kernel this final argument will be
+The kernel function is `func`, while the second and third arguments are the
+number of blocks and threads per block (taking the place of the execution
+configuration). The fourth argument holds the amount of additional shared memory
+to allocate when launching the kernel, and the fifth argument is the stream
+where the kernel should execute. `hipLaunchKernelGGL` macro always starts with
+the five parameters specified above, followed by the kernel arguments.
+
+So for our first kernel:
 ```
-   void *args[] = {&a, &d_x};
+  hipLaunchKernelGGL(myKernel, blocks, threadsPerBlock, 0, 0, a, d_x); 
 ```
-As `cudaLaunchKernel()` is an API function returning an error, the return code can be
-inpsected with the macro to check for errors in the launch (instead of `cudaPeekAtLastError()`).
