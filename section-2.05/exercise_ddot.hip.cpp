@@ -118,7 +118,9 @@ int main(int argc, char *argv[]) {
 
   /* Release resources */
 
+  HIP_ASSERT(hipFree(d_x));
   HIP_ASSERT(hipFree(d_y));
+  HIP_ASSERT(hipFree(d_result));
   delete h_y;
   delete h_x;
 
