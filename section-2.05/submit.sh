@@ -5,7 +5,7 @@
 #SBATCH --time=00:01:00
 
 # Replace [budget code] below with your project code (e.g. t01)
-#SBATCH --account=z19
+#SBATCH --account=[budget code]
 #SBATCH --partition=gpu
 #SBATCH --qos=gpu-shd
 
