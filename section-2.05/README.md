@@ -49,7 +49,7 @@ a value to the single memory location `sum`.
 What would happen if we tried to run a kernel of the following
 form?
 ```
-  __global__ myKernel(int ndata, double * data, double * sum) {
+  __global__ myKernel(int ndata, double *data, double *sum) {
 
     int i = blockIdx.x*blockDim.x + threadIdx.x;
 
@@ -98,8 +98,8 @@ So the atomic update is a single unified operation on a single thread:
 
 `atomicAdd()` is an overloaded device function:
 ```
-__device__ int atomicAdd(int * address, int value);
-__device__ double atomicAdd(double * address, double value);
+__device__ int atomicAdd(int *address, int value);
+__device__ double atomicAdd(double *address, double value);
 ```
 and so on. The old value of the target variable is returned.
 
@@ -124,7 +124,7 @@ object at compile time ("static" shared memory).
 ### Synchronisation
 
 There are quite a large number of synchronisation options for
-threads within a block in CUDA. The essential one is probably
+threads within a block in HIP. The essential one is probably
 ```
   __syncthreads();
 ```
@@ -140,7 +140,7 @@ Here is a (slightly contrived) example:
  * becomes ...,3,2,1,0
  * Assume we have one block. */
 
-__global__ void reverseElements(int * myArray) {
+__global__ void reverseElements(int *myArray) {
 
   __shared__ int tmp[THREADS_PER_BLOCK];
 
@@ -166,7 +166,7 @@ There is a potential for deadlock.
 
 ### Branch divergence
 
-It is beneficial for performance to avoid "warp divergence"
+It is beneficial for performance to avoid "wavefront divergence"
 e.g.,
 ```
   int tid = blockIdx.x*blockDim.x + threadIdx.x;
@@ -190,7 +190,7 @@ like
      /* threads 32, 33, 34, ... */
   }
 ```
-where `warpSize` is another special value provided by CUDA.
+where `warpSize`(a.k.a wave size) is another special value provided by HIP/CUDA.
 
 ## Other potential performance concerns
 
@@ -214,7 +214,7 @@ The template provided sets up two vectors `x` and `y` with some
 initial values. The exercise is to complete the `ddot()` kernel
 which we will give the prototype:
 ```
-  __global__ void ddot(int n, double * x, double * y, double * result);
+  __global__ void ddot(int n, double *x, double *y, double *result);
 ```
 where the `result` is a single scalar value which is the dot
 product. A naive serial kernel is provided to give the correct
