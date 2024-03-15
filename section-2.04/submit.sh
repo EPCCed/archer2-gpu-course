@@ -1,11 +1,14 @@
 #!/bin/bash
 
+#SBATCH --job-name=HIP
+#SBATCH --gpus=1
 #SBATCH --time=00:01:00
+
+# Replace [budget code] below with your project code (e.g. t01)
+#SBATCH --account=[budget code]
 #SBATCH --partition=gpu
-#SBATCH --qos=short
-#SBATCH --gres=gpu:1
+#SBATCH --qos=gpu-shd
 
-module load nvidia/nvhpc
+HSA_XNACK=1
 
-nvprof ./a.out
-
+srun --ntasks=1 --cpus-per-task=1 rocprof --hsa-trace --sys-trace ./a.out
