@@ -1,11 +1,10 @@
 #!/bin/bash
 
+#SBATCH --job-name=HIP
+#SBATCH --gpus=1
 #SBATCH --time=00:01:00
+
 #SBATCH --partition=gpu
-#SBATCH --qos=short
-#SBATCH --gres=gpu:1
+#SBATCH --qos=gpu-shd
 
-module load nvidia/nvhpc
-
-nvprof ./a.out
-
+srun --ntasks=1 --cpus-per-task=1 ./a.out
