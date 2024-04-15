@@ -25,6 +25,7 @@
 
 #include <cassert>
 #include <cfloat>
+#include <cstdio>
 #include <iomanip>
 #include <iostream>
 #include <string>
