@@ -32,7 +32,7 @@ This gives rise to a *directed acyclic graph*, or DAG.
 The idea is then to construct a description of the graph from the
 constituent nodes and dependencies, and then execute the graph.
 
-### Creating a CUDA graph
+### Creating a HIP graph
 
 The overall container for a graph is of type
 ```
