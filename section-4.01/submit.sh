@@ -1,11 +1,11 @@
 #!/bin/bash
 
+#SBATCH --job-name=HIP
+#SBATCH --gpus=1
+#SBATCH --nodes=1
 #SBATCH --time=00:02:00
+
 #SBATCH --partition=gpu
-#SBATCH --qos=short
-#SBATCH --gres=gpu:4
+#SBATCH --qos=gpu-shd
 
-module load nvidia/nvhpc
-export TMPDIR=$(pwd)
-
-nsys profile -o streamprofile ./a.out
+srun --ntasks=1 --cpus-per-task=1 rocprof --sys-trace ./a.out
