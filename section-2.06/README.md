@@ -1,10 +1,10 @@
 # Constant memory
 
-One further type of memory used in CUDA programs is *constant* memory,
+One further type of memory used in HIP programs is *constant* memory,
 which is device memory to hold values which cannot be updated for
 the duration of a kernel.
 
-Physically, this is likely to be a small cache on each SM set aside for
+Physically, this is likely to be a small cache on each CU set aside for
 the purpose.
 
 This can provide fast (read-only) access to frequently used values.
@@ -14,14 +14,14 @@ hardware).
 ## Kernel parameters
 
 If one calls a kernel function, actual arguments are (conceptually, at
-least) passed by value as in standard C, and are placed in constant memory.
+least) passed by value as in standard C++, and are placed in constant memory.
 E.g.,
 ```
-__global__ void kernel(double arg1, double * arg2, ...);
+__global__ void kernel(double arg1, double *arg2, ...);
 ```
-If one uses the `--ptxas-options=-v` option to `nvcc` this will
+<!-- If one uses the `--ptxas-options=-v` option to `nvcc` this will
 report (amongst other things) a number of `cmem[]` entries;
-`cmem[0]` will usually include the kernel arguments.
+`cmem[0]` will usually include the kernel arguments. -->
 
 Note this may be of limited size (e.g., 4096 bytes), so large
 objects should not be passed by value to the device.
@@ -37,14 +37,14 @@ Host values can be copied to the device with the API function
 ```
   double values[3] = {1.0, 2.0, 3.0};
 
-  cudaMemcpyToSymbol(data_read_only, values, 3*sizeof(double));
+  hipMemcpyToSymbol(data_read_only, values, 3*sizeof(double));
 ```
 The object `data_read_only` may then be accessed by a kernel or kernels
 at the same scope.
 
-The compiler usually reports usage under `cmem[3]`. Again, capacity
-is limited (e.g., may be 64 kB). If an object is too large it will
-probably spill into global memory.
+<!-- The compiler usually reports usage under `cmem[3]`. -->
+Again, capacity is limited (e.g., may be 64 kB). If an object is too large it
+will probably spill into global memory.
 
 ## Exercise
 
