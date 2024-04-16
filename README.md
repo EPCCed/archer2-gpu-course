@@ -23,7 +23,7 @@ The course will go on to consider execution of independent streams, and
 the execution of work composed as a collection of dependent tasks expressed
 as a graph. Device management and details of device to device data transfer
 will be covered for situations where more than one GPU device is available.
-HIP-aware MPI will be covered.
+<!-- HIP-aware MPI will be covered. -->
 
 The course will not discuss programming with compiler directives, but does
 provide a concrete basis of understanding of the underlying principles of
@@ -40,10 +40,10 @@ exercises will limit themselves to C++). A familiarity with threaded
 programming models would be useful, but no previous knowledge of GPU
 programming is required.
 
-## Installation (TODO)
+## Installation
 
 For details of how to log into an ARCHER2 account, see
-https://cirrus.readthedocs.io/en/main/user-guide/connecting.html
+https://docs.archer2.ac.uk/quick-start/quickstart-users/
 
 Check out the Git repository to your ARCHER2 account.
 ```
@@ -52,15 +52,18 @@ $ git clone https://github.com/EPCCed/archer2-gpu-course.git
 $ cd archer-gpu-course
 ```
 For the examples and exercises in the course, we will use the
-Cray compiler driver `nvcc`. To access this
+Cray compiler driver. To access this
 ```
-$ module load nvidia/nvhpc
+$ module load PrgEnv-xxx
+$ module load rocm
+$ module load craype-accel-amd-gfx90a
+$ module load craype-x86-milan
 ```
 Check you can compile and run a very simple program
 and submit the associated script to the queue system.
 ```
 $ cd section-2.01
-$ nvcc -arch=sm_70 exercise_dscal.cu
+$ CC -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH} exercise_dscal.hip.cpp
 $ sbatch submit.sh
 ```
 The result should appear in a file `slurm-123456.out` in the working
