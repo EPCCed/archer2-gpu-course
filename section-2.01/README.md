@@ -65,7 +65,7 @@ We will look at the explicit mechanism first.
 Declaration is via standard C/C++ data types and pointers, e.g.,
 
 ```c
-  double * data = NULL;   /* Device data */
+  double *data = NULL;   /* Device data */
 
   err = hipMalloc(&data, nArray*sizeof(double));
 
@@ -84,7 +84,7 @@ We will return to error handling below.
 Assuming we have established some data on the host, copies are
 via `hipMemcpy()`. Schematically,
 ```c
-  err = cudaMemcpy(data, hostdata, nArray*sizeof(double),
+  err = hipMemcpy(data, hostdata, nArray*sizeof(double),
                    hipMemcpyHostToDevice);
 
   /* ... do something ... */
@@ -98,7 +98,7 @@ stored in GPU memory (or and error has occurred).
 
 Formally, the API reads
 ```c
-hipError_t hipMemcpy(void * dest, void * src, size_t sz,
+hipError_t hipMemcpy(void *dest, void *src, size_t sz,
                        hipMemcpyKind direction);
 ```
 
@@ -110,13 +110,13 @@ It is important to check the return value against `hipSuccess`.
 If an error occurs, the error code can be interrogated to provide
 some meaningful information. E.g. use
 ```c
-const char * hipGetErrorName(hipError_t err);    /* Name */
-const char * hipGetErrorString(hipError_t err);  /* Descriptive string */
+const char *hipGetErrorName(hipError_t err);    /* Name */
+const char *hipGetErrorString(hipError_t err);  /* Descriptive string */
 ```
 
 ## Error handling in practice
 
-The requirement for error handling often appears in real C code
+The requirement for error handling often appears in real code
 as a macro, e.g.,
 ```c
   HIP_ASSERT( hipMalloc(&data, nArray*sizeof(double) );
@@ -144,7 +144,7 @@ from the GPU. We will address the kernel in the next exercise.
 
 To use the AMD compilation suite, please load:
 ```bash
-module load PrgEnv-cray
+module load PrgEnv-amd
 module load rocm
 module load craype-accel-amd-gfx90a
 module load craype-x86-milan
@@ -160,7 +160,7 @@ $ CC -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH} exercise_dscal.
 and submit to the queue system using the script provided. If the code has run
 correctly, you should see in the output something like:
 ```
-Device 0 name: Tesla V100-SXM2-16GB
+Device 0 name: 
 Maximum number of threads per block: 1024
 Results:
 No. elements 256, and correct: 1
@@ -175,7 +175,7 @@ Second, undertake the following steps:
     and check that `h_out` has the expected values;
 4. release the device resources `d_x` at the end of execution.
 
-Remember to use the macro to check the return value of each of the CUDA
+Remember to use the macro to check the return value of each of the HIP
 API calls.
 
 As there is no kernel yet, the output `h_out` should just be the same
@@ -184,21 +184,21 @@ should be correct.
 
 ### Finished?
 
-Check the CUDA documentation to see what other information is available
-from the structure `cudaDeviceProp`. This will be in the section on
-device management in the CUDA runtime API reference.
+Check the HIP documentation to see what other information is available
+from the structure `hipDeviceProp_t`. This will be in the section on
+device management in the HIP runtime API reference.
 
-What other possibilities exist for `cudaMemcpyKind`?
+What other possibilities exist for `hipMemcpyKind`?
 
-https://docs.nvidia.com/cuda/cuda-runtime-api/index.html
+https://rocm.docs.amd.com/projects/HIP/en/latest/doxygen/html/index.html
 
 ### What can go wrong?
 
-What happens if you forget the `-arch=sm_70` in the compilation?
+<!-- What happens if you forget the `-arch=sm_70` in the compilation? -->
 
 What happens if you mess up the order of the host and device references in
-a call to `cudaMemcpy()`? E.g.,
+a call to `hipMemcpy()`? E.g.,
 ```
-  cudaMemcpy(hostdata, devicedata, sz, cudaMemcpyHostToDevice);
+  hipMemcpy(hostdata, devicedata, sz, hipMemcpyHostToDevice);
 ```
 where the data has been allocated as the names suggest.
