@@ -10,10 +10,7 @@
  * a vector of length n, and alpha is a constant. The data type
  * is double.
  *
- * Part 1. Replace the explicit hipMalloc()/hipMemcpy() by
- *         managed memory.
- * Part 2. Add prefetch requests for x and y before the kernel,
- *         and the matrix a after the kernel.
+ * Replace the single kernel launch with the execution of a graph. 
  *
  * Copyright EPCC, The University of Edinburgh, 2023
  */
