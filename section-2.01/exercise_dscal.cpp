@@ -17,8 +17,8 @@
 
 #include <cassert>
 #include <cfloat>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <string>
 
 #include "hip/hip_runtime.h"
@@ -35,18 +35,18 @@ __host__ void myErrorHandler(hipError_t ifail, const std::string file, int line,
 #define ARRAY_LENGTH 256
 
 /* Suggested kernel parameters */
-#define NUM_BLOCKS  1
+#define NUM_BLOCKS 1
 #define THREADS_PER_BLOCK 256
 
 /* Main routine */
 
 int main(int argc, char *argv[]) {
 
-  size_t sz = ARRAY_LENGTH*sizeof(double);
+  size_t sz = ARRAY_LENGTH * sizeof(double);
 
-  double a = 1.0;          /* constant a */
-  double * h_x = NULL;     /* input array (host) */
-  double * h_out = NULL;   /* output array (host) */
+  double a = 1.0;       /* constant a */
+  double *h_x = NULL;   /* input array (host) */
+  double *h_out = NULL; /* output array (host) */
 
   /* Check we have a GPU, and get device name from the hipDeviceProp_t
    * structure. This is for information. */
@@ -58,8 +58,8 @@ int main(int argc, char *argv[]) {
   HIP_ASSERT(hipGetDeviceCount(&ndevice));
 
   if (ndevice == 0) {
-     std::cerr << "No GPU available!" << std::endl;
-     sdt::exit(0);
+    std::cerr << "No GPU available!" << std::endl;
+    sdt::exit(0);
   }
 
   HIP_ASSERT(hipGetDevice(&deviceNum));
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
   assert(h_out);
 
   for (int i = 0; i < ARRAY_LENGTH; i++) {
-    h_x[i] = 1.0*i;
+    h_x[i] = 1.0 * i;
     h_out[i] = 0;
   }
 
@@ -85,7 +85,6 @@ int main(int argc, char *argv[]) {
   /* TODO: copy input array from host to GPU */
 
   /* TODO: copy the result array back to the host output array */
-
 
   /* We can now check the results ... */
   std::cout << "Results:" << std::endl;
