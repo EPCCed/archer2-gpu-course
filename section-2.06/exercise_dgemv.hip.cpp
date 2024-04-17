@@ -166,7 +166,7 @@ int main(int argc, char *argv[]) {
       if (fabs(yi - h_y[i]) < DBL_EPSILON)
         ncorrect += 1;
       /* Can be uncommented to debug ... */
-      /* printf("Row %5d %14.7e %14.7e\n", i, y, h_y[i]); */
+      /* printf("Row %5d %14.7e %14.7e\n", i, yi, h_y[i]); */
     }
     std::cout << "No. rows " << mrow << ", and correct rows " << ncorrect
               << std::endl;

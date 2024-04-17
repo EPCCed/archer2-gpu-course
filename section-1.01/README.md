@@ -18,7 +18,7 @@ consideration in a performance model:
 4. **Parallelism:** can I replicate the basic unit above?
 
 
-### Clocks speeds
+### Clock speed
 
 Processor clock speed determines the fundamental rate of processing
 instructions, and hence data.
