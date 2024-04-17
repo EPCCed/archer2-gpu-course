@@ -92,7 +92,7 @@ the advertised start and finish times, and the break times.
 |       | Abstraction; host code and device code   | [section-1.02](section-1.02) |
 | 11:00 | Break                                    |                              |
 | 11:30 | CUDA/HIP programming: memory management  |                              |
-|       | `cudaMaloc(), cudaMmecpy()`              | [section-2.01](section-2.01) |
+|       | `hipMalloc(), hipMmecpy()`              | [section-2.01](section-2.01) |
 | 12:15 | Executing a kernel                       |                              |
 |       | `__global__` functions `<<<...>>>`       | [section-2.02](section-2.02) |
 | 13:00 | Lunch                                    |                              |
@@ -114,12 +114,12 @@ the advertised start and finish times, and the break times.
 | Time  | Content                                  | Section                      |
 |-------|------------------------------------------|------------------------------|
 | 09:30 | Streams                                  |                              |
-|       | Using `cudaMempcyAsync()` etc            | [section-4.01](section-4.01) |
+|       | Using `hipMempcyAsync()` etc            | [section-4.01](section-4.01) |
 | 10:00 | Graph API                                |                              |
-|       | Using `cudaGraphLaunch()` etc            | [section-4.02](section-4.02) |
+|       | Using `hipGraphLaunch()` etc            | [section-4.02](section-4.02) |
 | 11:00 | Break                                    |                              |
 | 11:30 | Device management: more then one GPU     |                              |
-|       | `cudaMemcpy()` again                     | [section-5.01](section-5.01) |
+|       | `hipMemcpy()` again                     | [section-5.01](section-5.01) |
 | 12:15 | Lunch                                    |                              |
 | 13:00 | Putting it all together                  |                              |
 |       | Conjugate gradient exercise              | [section-6.01](section-6.01) |
