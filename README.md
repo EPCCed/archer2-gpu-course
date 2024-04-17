@@ -113,8 +113,6 @@ the advertised start and finish times, and the break times.
 
 | Time  | Content                                  | Section                      |
 |-------|------------------------------------------|------------------------------|
-| 09:00 | Profiling: Nsight systems and compute    |                              |
-| 09:10 | Using `nsys` and `ncu`                   | [section-3.01](section-3.01)      |
 | 09:30 | Streams                                  |                              |
 |       | Using `cudaMempcyAsync()` etc            | [section-4.01](section-4.01) |
 | 10:00 | Graph API                                |                              |
@@ -122,15 +120,10 @@ the advertised start and finish times, and the break times.
 | 11:00 | Break                                    |                              |
 | 11:30 | Device management: more then one GPU     |                              |
 |       | `cudaMemcpy()` again                     | [section-5.01](section-5.01) |
-| 12:15 | Extra topic: GPU-aware MPI               |                              |
-|       | Exercise                                 | [section-5.02](section-5.02) |
-| 13:00 | Lunch                                    |                              |
-| 14:00 | Putting it all together                  |                              |
+| 12:15 | Lunch                                    |                              |
+| 13:00 | Putting it all together                  |                              |
 |       | Conjugate gradient exercise              | [section-6.01](section-6.01) |
-| 15:00 | Break                                    |                              |
-| 15:20 | Exercises                                |                              |
-| 15:50 | Miscellaneous comments                   | [section-7.01](section-7.01) |
-| 16:00 | Close                                    |                              |
+| 15:00 | Close                                    |                              |                                 |                              |
 
 
 
