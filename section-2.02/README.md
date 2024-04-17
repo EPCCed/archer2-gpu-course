@@ -60,8 +60,8 @@ We have introduced the structure
     unsigned int z;
   } dim3;
 ```
-which may be initialised in C as above, or using C++ style
-constructors.
+from the HIP runtime, which may be initialised in C as above, or using
+C++ style constructors.
 
 
 ### More than one block
