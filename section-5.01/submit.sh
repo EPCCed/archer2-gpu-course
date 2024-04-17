@@ -7,4 +7,4 @@
 #SBATCH --partition=gpu
 #SBATCH --qos=gpu-shd
 
-srun --ntasks=1 --cpus-per-task=1 ./a.out
+srun --ntasks=2 --cpus-per-task=8 ./a.out
