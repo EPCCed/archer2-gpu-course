@@ -1,64 +1,69 @@
 
-<img src="./images/archer2_logo.png" align="left" width="355" height="100" />
-<img src="./images/epcc_logo.jpg" align="right" width="133" height="100" />
+<img src="./img/archer2_logo.png" align="left" width="284" height="80" />
+<img src="./img/epcc_logo.png" align="right" width="248" height="66" />
 
-<br><br><br><br>
+<br /><br /><br /><br />
 
-# Introduction to GPU programming with CUDA/HIP
+# Introduction to GPU programming with HIP
 
 [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
-This short course will provide an introduction to GPU computing with CUDA
+This short course will provide an introduction to GPU computing with HIP
 aimed at scientific application programmers wishing to develop their own
 software. The course will give a background on the difference between CPU
-and GPU architectures as a prelude to introductory exercises in CUDA
+and GPU architectures as a prelude to introductory exercises in HIP
 programming. The course will discuss the execution of kernels, memory
 management, and shared memory operations. Common performance issues are
-discussed and their solution addressed. Profiling will be introduced via
-the current NVIDIA tools.
+discussed and their solution addressed.
+
+<!-- Profiling will be introduced via
+the current AMD tools. -->
 
 The course will go on to consider execution of independent streams, and
 the execution of work composed as a collection of dependent tasks expressed
 as a graph. Device management and details of device to device data transfer
 will be covered for situations where more than one GPU device is available.
-CUDA-aware MPI will be covered.
+<!-- HIP-aware MPI will be covered. -->
 
 The course will not discuss programming with compiler directives, but does
 provide a concrete basis of understanding of the underlying principles of
-the CUDA model which is useful for programmers ultimately wishing to make
+the HIP model which is useful for programmers ultimately wishing to make
 use of OpenMP or OpenACC (or indeed other models). The course will not
 consider graphics programming, nor will it consider machine learning
 packages.
 
-Note that the course is also appropriate for those wishing to use AMD GPUs
-via the HIP API, although we will not specifically use HIP.
+Note that the course is also appropriate for those wishing to use NVIDIA GPUs
+via the CUDA API, although we will not specifically use CUDA.
 
 Attendees must be able to program in C or C++ (course examples and
-exercises will limit themselves to C). A familiarity with threaded
+exercises will limit themselves to C++). A familiarity with threaded
 programming models would be useful, but no previous knowledge of GPU
 programming is required.
 
 ## Installation
 
-For details of how to log into a Cirrus account, see
-https://cirrus.readthedocs.io/en/main/user-guide/connecting.html
+For details of how to log into an ARCHER2 account, see
+https://docs.archer2.ac.uk/quick-start/quickstart-users/
 
-Check out the git repository to your Cirrus account.
+Check out the Git repository to your ARCHER2 account.
 ```
 $ cd ${HOME/home/work}
-$ https://github.com/EPCCed/archer-gpu-course.git
+$ git clone https://github.com/EPCCed/archer2-gpu-course.git
 $ cd archer-gpu-course
 ```
 For the examples and exercises in the course, we will use the
-NVIDIA compiler driver `nvcc`. To access this
+Cray compiler driver. To access this
 ```
-$ module load nvidia/nvhpc
+$ module load PrgEnv-xxx
+$ module load rocm
+$ module load craype-accel-amd-gfx90a
+$ module load craype-x86-milan
 ```
 Check you can compile and run a very simple program
 and submit the associated script to the queue system.
 ```
 $ cd section-2.01
-$ nvcc -arch=sm_70 exercise_dscal.cu
+$ CC -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH} exercise_dscal.hip.cpp
 $ sbatch submit.sh
 ```
 The result should appear in a file `slurm-123456.out` in the working
@@ -86,7 +91,7 @@ the advertised start and finish times, and the break times.
 | 10:30 | The CUDA/HIP programming model           |                              |
 |       | Abstraction; host code and device code   | [section-1.02](section-1.02) |
 | 11:00 | Break                                    |                              |
-| 11:30 | CUDA/HIP programming: memory managenent  |                              |
+| 11:30 | CUDA/HIP programming: memory management  |                              |
 |       | `cudaMaloc(), cudaMmecpy()`              | [section-2.01](section-2.01) |
 | 12:15 | Executing a kernel                       |                              |
 |       | `__global__` functions `<<<...>>>`       | [section-2.02](section-2.02) |
