@@ -24,7 +24,7 @@ run on a single Compute Unit (CU). In our one-dimensional picture we may have:
 ![Threads and blocks in one dimension](../images/ks-threads-blocks.jpeg)
 
 A *wavefront*, a subset of a work group, is designated to execute as a single
-SIMD unit. In AMD GPUs, wavefronts commonly consist of 64 threads.
+SIMD (Single Instruction Multiple Data) unit. In AMD GPUs, wavefronts commonly consist of 64 threads.
 
 Wavefronts are mapped to Compute Units (CU) for execution by the hardware
 scheduler.

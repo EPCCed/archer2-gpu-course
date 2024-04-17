@@ -76,7 +76,7 @@ device.
 If available, it is possible to disable and enable the peer access using
 ```
   hipDeviceDisablePeerAccess(int peerDevice);
-  hipDeviceEnablePeerAccess(int perrDevice, unsigned int flags);
+  hipDeviceEnablePeerAccess(int peerDevice, unsigned int flags);
 ```
 (`flags` is always set to zero).
 
