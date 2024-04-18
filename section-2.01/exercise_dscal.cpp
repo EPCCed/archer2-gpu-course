@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 
   if (ndevice == 0) {
     std::cerr << "No GPU available!" << std::endl;
-    sdt::exit(0);
+    std::exit(0);
   }
 
   HIP_ASSERT(hipGetDevice(&deviceNum));
