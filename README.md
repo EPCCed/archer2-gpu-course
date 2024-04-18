@@ -47,24 +47,24 @@ https://docs.archer2.ac.uk/quick-start/quickstart-users/
 
 Check out the Git repository to your ARCHER2 account.
 ```
-$ cd ${HOME/home/work}
-$ git clone https://github.com/EPCCed/archer2-gpu-course.git
-$ cd archer-gpu-course
+cd ${HOME/home/work}
+git clone https://github.com/EPCCed/archer2-gpu-course.git
+cd archer2-gpu-course
 ```
 For the examples and exercises in the course, we will use the
 Cray compiler driver. To access this
 ```
-$ module load PrgEnv-xxx
-$ module load rocm
-$ module load craype-accel-amd-gfx90a
-$ module load craype-x86-milan
+module restore
+module load rocm
+module load craype-accel-amd-gfx90a
+module load craype-x86-milan
 ```
 Check you can compile and run a very simple program
 and submit the associated script to the queue system.
 ```
-$ cd section-2.01
-$ CC -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH} exercise_dscal.hip.cpp
-$ sbatch submit.sh
+cd section-2.01
+CC -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH} exercise_dscal.hip.cpp
+sbatch submit.sh
 ```
 The result should appear in a file `slurm-123456.out` in the working
 directory.
