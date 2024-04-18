@@ -54,7 +54,7 @@ cd archer2-gpu-course
 For the examples and exercises in the course, we will use the
 Cray compiler driver. To access this
 ```
-module restore
+module load PrgEnv-amd
 module load rocm
 module load craype-accel-amd-gfx90a
 module load craype-x86-milan
