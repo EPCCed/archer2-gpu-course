@@ -135,7 +135,7 @@ context, and may avoid surprises later in the code.
 
 ## Exercise (20 minutes)
 
-Look at the associated exercise `exercise_dscal.cpp`. This provides a template
+Look at the associated exercise `exercise_dscal.hip.cpp`. This provides a template
 for a first exercise which is to implement a simple scale function,
 which will multiply all the elements of an array by a constant.
 
@@ -155,7 +155,7 @@ the queue system.
 
 Recall that we should use
 ```
-$ CC -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH} exercise_dscal.cpp
+$ CC -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH} exercise_dscal.hip.cpp
 ```
 and submit to the queue system using the script provided. If the code has run
 correctly, you should see in the output something like:
