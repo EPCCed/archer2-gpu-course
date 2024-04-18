@@ -42,8 +42,7 @@ reference in the code (`h_ptr` and `d_ptr`).
 Managed memory is allocated on the host via
 
 ```c
-__host__ hipError_t hipMallocManaged(void **ptr, size_t sz,
-                                     unsigned int flags);
+__host__ hipError_t hipMallocManaged(void **ptr, size_t sz);
 ```
 
 in place of the combination of `malloc()` or `new` (in C++) and `hipMalloc()`.
