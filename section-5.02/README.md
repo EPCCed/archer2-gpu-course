@@ -17,9 +17,9 @@ current device appropriately.
   int rank = -1;              /* MPI rank */
   MPI_Comm_rank(comm, &rank);
 
-  cudaSetDevice(rank % ndevicePerNode);
+  hipSetDevice(rank % ndevicePerNode);
 ```
-The number of devices per node may be obtained via `cudaGetDeviceCount()`
+The number of devices per node may be obtained via `hipGetDeviceCount()`
 or it may require external input.
 
 ### Passing messages between devices
@@ -27,12 +27,12 @@ or it may require external input.
 In order to pass a message between two devices, one might consider:
 ```
   /* On the sending side ... */
-  cudaMemcpy(hmsgs, dmsgs, ndata*sizeof(double), cudaMemcpyDeviceToHost);
+  hipMemcpy(hmsgs, dmsgs, ndata*sizeof(double), hipMemcpyDeviceToHost);
   MPI_Isend(hsmgs, ndata, MPI_DOUBLE, dst, ...);
 
   /* On the receiving side ... */
   MPI_Recv(hmsgr, ndata, MPI_DOUBLE, src, ...);
-  cudaMemcpy(dmsgr, hmsgr, ndata*sizeof(), cudaMemcpyHostToDevice);
+  hipMemcpy(dmsgr, hmsgr, ndata*sizeof(), hipMemcpyHostToDevice);
 ```
 This may very well lead to poor performance.
 
@@ -54,9 +54,9 @@ also favour use of GPU-aware MPI.
 
 ## Exercise
 
-The NVIDIA HPC SDK includes a build of OpenMPI with GPU-aware MPI
-enabled. A sample program has been provided with measures the time
-taken for messages of different size to be send between to MPI
-tasks by the two methods outlined above.
+The AMD's ROCm software stack includes a build of OpenMPI with GPU-aware MPI
+enabled. A sample program has been provided with measures the time taken for
+messages of different size to be send between to MPI tasks by the two methods
+outlined above.
 
 Have a look at the program, and try to compile and run it.
