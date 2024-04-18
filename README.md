@@ -92,7 +92,7 @@ the advertised start and finish times, and the break times.
 |       | Abstraction; host code and device code   | [section-1.02](section-1.02) |
 | 11:00 | Break                                    |                              |
 | 11:30 | CUDA/HIP programming: memory management  |                              |
-|       | `hipMalloc(), hipMmecpy()`              | [section-2.01](section-2.01) |
+|       | `hipMalloc(), hipMemcpy()`              | [section-2.01](section-2.01) |
 | 12:15 | Executing a kernel                       |                              |
 |       | `__global__` functions `<<<...>>>`       | [section-2.02](section-2.02) |
 | 13:00 | Lunch                                    |                              |
