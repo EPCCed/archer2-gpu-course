@@ -142,17 +142,17 @@ This is done via
 
 The `hipMemoryAdvise` value may include:
 
-1. `hipMemAdviseSetReadMostly` indicates infrequent reads;
-2. `hipMemAdviseSetPreferredLocation` sets the preferred location to
-   the specified device (`hipCpuDeviceId` for the host);
-3. `hipMemAdviseSetAccessedBy` suggests that the data will be accessed
-   by the specified device.
-4. `hipMemAdviseSetCoarseGrain` allows coherent operations between host and
-   device, while executing kernels suitable for that only needs to be coherent
-   at dispatch boundaries, enhancing performance. The default is fine-grain.
+|  Advice |  Description |
+|---|---|
+|   `hipMemAdviseSetReadMostly` |  Data will mostly be read and only occasionally be written to |
+|   `hipMemAdviseSetPreferredLocation` |  Set the preferred location for the data as the specified device |
+| `hipMemAdviseSetAccessedBy` | Data will be accessed by the specified device so prevent page faults as much as possible |
+| `hipMemAdviseSetCoarseGrain` | The default memory model is fine-grain. That allows coherent operations between host and device, while executing kernels. The coarse-grain can be used for data that only needs to be coherent at dispatch boundaries for better performance |
 
-Each option has a corresponding `Unset` value which can be used to nullify the
-effect of a preceding `Set` specification.
+Each option has a corresponding `Unset` (e.g., `hipMemAdviseUnsetReadMostly`) 
+value which can be used to nullify the effect of a preceding `Set`
+specification. Further info can be found on
+[the HIP Documentation.](https://rocm.docs.amd.com/projects/HIP/en/latest/doxygen/html/group___global_defs.html)
 
 Again, the relevant memory must be managed by HIP.
 

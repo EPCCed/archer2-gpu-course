@@ -16,7 +16,7 @@ hardware).
 If one calls a kernel function, actual arguments are (conceptually, at
 least) passed by value as in standard C++, and are placed in constant memory.
 E.g.,
-```
+```c
 __global__ void kernel(double arg1, double *arg2, ...);
 ```
 <!-- If one uses the `--ptxas-options=-v` option to `nvcc` this will
@@ -30,11 +30,11 @@ objects should not be passed by value to the device.
 
 It is also possible to use the `__constant__` memory space qualifier
 for objects declared at file scope, e.g.:
-```
+```c
 static __constant__ double data_read_only[3];
 ```
 Host values can be copied to the device with the API function
-```
+```c
   double values[3] = {1.0, 2.0, 3.0};
 
   hipMemcpyToSymbol(data_read_only, values, 3*sizeof(double));

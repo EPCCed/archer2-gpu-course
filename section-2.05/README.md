@@ -7,7 +7,7 @@ We have also used local variables in the kernel, which appear
 on the stack in the expected fashion. Local variables are expected
 to be held in registers and
 take on a distinct value for each thread, e.g.,
-```
+```c
   int i = blockDim.x*blockIdx.x + threadIdx.x;
 ```
 
@@ -20,13 +20,13 @@ GPU context. This is discussed below.
 
 In what we have seen so far, kernels have been used to replace
 loops with independent iterations, e.g.,
-```
+```c
   for (int i = 0; i < ndata; i++) {
     data[i] = 2.0*data[i];
   }
 ```
 is replaced by a kernel with the body
-```
+```c
   int i = blockDim.x*blockIdx.x + threadIdx.x;
 
   data[i] = 2.0*data[i];
@@ -37,7 +37,7 @@ memory, there are no potential conflicts.
 ### A different pattern
 
 Consider a loop with the following pattern
-```
+```c
   double sum = 0.0;
   for (int i = 0; i < ndata; i++) {
     sum += data[i];
@@ -48,7 +48,7 @@ a value to the single memory location `sum`.
 
 What would happen if we tried to run a kernel of the following
 form?
-```
+```c
   __global__ myKernel(int ndata, double *data, double *sum) {
 
     int i = blockIdx.x*blockDim.x + threadIdx.x;
@@ -61,12 +61,12 @@ form?
 
 The problem lies in the fact that the increment is actually a
 number of different operations which occur in order.
-```
+```c
    *sum += ndata[i];
 ```
 1. Read the current value of `sum` from memory into a register;
 2. Undertake the appropriate arithmetic in register;
-3. store the new result back to global memory.
+3. Store the new result back to global memory.
 
 If many threads are performing these operations in an uncontrolled
 fashion, unexpected results can arise.
@@ -82,22 +82,22 @@ operations happen in the correct order.
 
 For global memory, we require a so-called *atomic* update. For our
 example above:
-```
+```c
   *sum += data[i];            /* WRONG: unsafe update */
   atomicAdd(sum, data[i]);    /* Correct: atomic update */
 ```
 Such updates are usually implemented by some form of lock.
 
 So the atomic update is a single unified operation on a single thread:
-1. obtain a lock on the relevant memory location (`sum`);
-2. read the existing value into register and update;
-3. store the result back to the global memory location;
-4. release the lock on that location.
+1. Obtain a lock on the relevant memory location (`sum`);
+2. Read the existing value into register and update;
+3. Store the result back to the global memory location;
+4. Release the lock on that location.
 
 ### Note
 
 `atomicAdd()` is an overloaded device function:
-```
+```c
 __device__ int atomicAdd(int *address, int value);
 __device__ double atomicAdd(double *address, double value);
 ```
@@ -108,7 +108,7 @@ and so on. The old value of the target variable is returned.
 
 There is an additional type of shared memory available in kernels
 introduced using the `__shared__` memory space qualifier. E.g.,
-```
+```c
   __shared__ double tmp[THREADS_PER_BLOCK];
 ```
 These values are shared only between threads in the same block.
@@ -125,7 +125,7 @@ object at compile time ("static" shared memory).
 
 There are quite a large number of synchronisation options for
 threads within a block in HIP. The essential one is probably
-```
+```c
   __syncthreads();
 ```
 This is a barrier-like synchronisation which says that all
@@ -135,7 +135,7 @@ statement before any are allowed to continue.
 
 ### Example
 Here is a (slightly contrived) example:
-```
+```c
 /* Reverse elements so that the order 0,1,2,3,...
  * becomes ...,3,2,1,0
  * Assume we have one block. */
@@ -155,9 +155,9 @@ __global__ void reverseElements(int *myArray) {
 
 ### Synchronisation hazards
 
-The usual conisderations apply when thinking about thread
+The usual considerations apply when thinking about thread
 synchronisation. E.g.,
-```
+```c
    if (condition) {
       __syncthreads();
    }
@@ -168,7 +168,7 @@ There is a potential for deadlock.
 
 It is beneficial for performance to avoid "wavefront divergence"
 e.g.,
-```
+```c
   int tid = blockIdx.x*blockDim.x + threadIdx.x;
 
   if (tid % 2 == 0) {
@@ -178,9 +178,9 @@ e.g.,
     /* threads 1, 3, 5 ... *.
   }
 ```
-may cause seralisation. For this reason you may see things
+may cause serialisation. For this reason you may see things
 like
-```
+```c
   int tid = blockIdx.x*blockDim.x + threadIdx.x;
 
   if ((tid / warpSize) % 2 == 0) {
@@ -213,7 +213,7 @@ in the style of the BLAS level 1 routine `ddot()`.
 The template provided sets up two vectors `x` and `y` with some
 initial values. The exercise is to complete the `ddot()` kernel
 which we will give the prototype:
-```
+```c
   __global__ void ddot(int n, double *x, double *y, double *result);
 ```
 where the `result` is a single scalar value which is the dot

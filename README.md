@@ -42,8 +42,8 @@ programming is required.
 
 ## Installation
 
-For details of how to log into an ARCHER2 account, see
-https://docs.archer2.ac.uk/quick-start/quickstart-users/
+For details of how to log into an ARCHER2 account, see the
+[ARCHER2 quickstart for users.](https://docs.archer2.ac.uk/quick-start/quickstart-users/)
 
 Check out the Git repository to your ARCHER2 account.
 ```
@@ -51,14 +51,16 @@ cd ${HOME/home/work}
 git clone https://github.com/EPCCed/archer2-gpu-course.git
 cd archer2-gpu-course
 ```
+
 For the examples and exercises in the course, we will use the
-Cray compiler driver. To access this
+AMD compiler driver. To access this
 ```
 module load PrgEnv-amd
 module load rocm
 module load craype-accel-amd-gfx90a
 module load craype-x86-milan
 ```
+
 Check you can compile and run a very simple program
 and submit the associated script to the queue system.
 ```
@@ -66,6 +68,7 @@ cd section-2.01
 CC -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH} exercise_dscal.hip.cpp
 sbatch submit.sh
 ```
+
 The result should appear in a file `slurm-123456.out` in the working
 directory.
 
@@ -114,17 +117,16 @@ the advertised start and finish times, and the break times.
 | Time  | Content                                  | Section                      |
 |-------|------------------------------------------|------------------------------|
 | 09:30 | Streams                                  |                              |
-|       | Using `hipMempcyAsync()` etc            | [section-4.01](section-4.01) |
+|       | Using `hipMempcyAsync()` etc             | [section-4.01](section-4.01) |
 | 10:00 | Graph API                                |                              |
-|       | Using `hipGraphLaunch()` etc            | [section-4.02](section-4.02) |
+|       | Using `hipGraphLaunch()` etc             | [section-4.02](section-4.02) |
 | 11:00 | Break                                    |                              |
 | 11:30 | Device management: more then one GPU     |                              |
-|       | `hipMemcpy()` again                     | [section-5.01](section-5.01) |
+|       | `hipMemcpy()` again                      | [section-5.01](section-5.01) |
 | 12:15 | Lunch                                    |                              |
 | 13:00 | Putting it all together                  |                              |
 |       | Conjugate gradient exercise              | [section-6.01](section-6.01) |
-| 15:00 | Close                                    |                              |                                 |                              |
-
+| 15:00 | Close                                    |                              |
 
 
 ---
