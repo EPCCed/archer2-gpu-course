@@ -47,7 +47,7 @@ L2, L3) and so on.
 
 Try the command
 ```bash
-$ lscpu
+lscpu
 ```
 on ARCHER2 to see what the cache hierarchy looks like.
 
@@ -82,8 +82,8 @@ ARCHER2.
 
 ## Graphics processors
 
-Driven by commercial interest (games), a many-core processor *par exellence* has
-been developed. These are graphics processors. Subject to the same
+Driven by commercial interest (games), a many-core processor *par excellence*
+has been developed. These are graphics processors. Subject to the same
 considerations as those discussed above, the hardware design choices taken to
 resolve them have been specifically related to the parallel pixel rendering
 problem (a trivially parallel problem).
@@ -103,7 +103,7 @@ So GPUs have been specifically designed to solve the parallel problem of
 rendering independent pixels. A modern GPU may have O(1000) cores.
 
 
-### Hardware organiastion
+### Hardware organisation
 
 Cores on AMD GPUs are organised into units referred to as *compute unit*, or
 CUs. Each CU contains several smaller processors called stream processors. These
@@ -116,8 +116,8 @@ compute units (CUs). Each CU houses 64 stream processors, resulting in a total
 of 6,656 stream processors working in tandem.
 
 
-A more complete overview is given by AMD
-https://www.amd.com/en/technologies/cdna.html#instinct.
+A more complete overview is given by AMD:
+[AMD Instinct Accelerators.](https://www.amd.com/en/technologies/cdna.html#instinct)
 
 For NVIDIA GPUs, the picture is essentially similar, although some of the jargon
 differs.
