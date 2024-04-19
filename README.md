@@ -54,7 +54,7 @@ cd archer2-gpu-course
 For the examples and exercises in the course, we will use the
 Cray compiler driver. To access this
 ```
-module restore
+module load PrgEnv-amd
 module load rocm
 module load craype-accel-amd-gfx90a
 module load craype-x86-milan
@@ -102,9 +102,9 @@ the advertised start and finish times, and the break times.
 | 15:20 | Managed memory                           |                              |
 |       | Exercise on managed memory               | [section-2.04](section-2.04) |
 | 15:50 | Shared memory                            |                              |
-| 16:10 | Exercise on vector product               | [section-2.05](section-2.05) |
+|       | Exercise on vector product               | [section-2.05](section-2.05) |
 | 16:30 | Constant memory                          |                              |
-| 16:40 | All together: matrix-vector product      | [section-2.06](section-2.06) |
+|       | All together: matrix-vector product      | [section-2.06](section-2.06) |
 | 17:00 | Close                                    |                              |
 
 

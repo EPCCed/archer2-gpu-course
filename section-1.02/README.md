@@ -66,7 +66,7 @@ Host are queued into streams for execution on the device.
 
 ## Compilation
 
-`hpicc` is a compiler driver utility that calls the AMD LLVM compiler
+`hipcc` is a compiler driver utility that calls the AMD LLVM compiler
 `amdclang(++)` (or `nvcc`) to compile HIP code. `hipcc` is included in the AMD
 ROCm Software stack.
 
