@@ -88,45 +88,56 @@ the advertised start and finish times, and the break times.
 
 | Time  | Content                                  | Section                      |
 |-------|------------------------------------------|------------------------------|
-| 09:30 | Logistics, login, modules, local details | See above                    |
-| 10:00 | Introduction                             |                              |
+| 10:00 | Logistics, login, modules, local details | See above                    |
+| 10:15 | Introduction                             |                              |
 |       | Performance model; Graphics processors   | [section-1.01](section-1.01) |
-| 10:30 | The CUDA/HIP programming model           |                              |
+| 10:45 | Morning break                            |                              |
+| 11:00 | The CUDA/HIP programming model           |                              |
 |       | Abstraction; host code and device code   | [section-1.02](section-1.02) |
-| 11:00 | Break                                    |                              |
-| 11:30 | CUDA/HIP programming: memory management  |                              |
-|       | `hipMalloc(), hipMemcpy()`              | [section-2.01](section-2.01) |
-| 12:15 | Executing a kernel                       |                              |
+| 12:00 | Lunch                                    |                              |
+| 13:00 | CUDA/HIP programming: memory management  |                              |
+|       | `hipMalloc(), hipMemcpy()`               | [section-2.01](section-2.01) |
+| 13:45 | Executing a kernel                       |                              |
 |       | `__global__` functions `<<<...>>>`       | [section-2.02](section-2.02) |
-| 13:00 | Lunch                                    |                              |
-| 14:00 | Some performance considerations          |                              |
+| 14:30 | Afternoon break                          |                              |
+| 14:45 | Some performance considerations          |                              |
 |       | Exercise on matrix operation             | [section-2.03](section-2.03) |
-| 15:00 | Break                                    |                              |
-| 15:20 | Managed memory                           |                              |
-|       | Exercise on managed memory               | [section-2.04](section-2.04) |
-| 15:50 | Shared memory                            |                              |
-|       | Exercise on vector product               | [section-2.05](section-2.05) |
-| 16:30 | Constant memory                          |                              |
-|       | All together: matrix-vector product      | [section-2.06](section-2.06) |
-| 17:00 | Close                                    |                              |
-
+| 16:00 | Close                                    |                              |
 
 ### Day two
+
+| Time  | Content                                  | Section                      |
+|-------|------------------------------------------|------------------------------|
+| 10:00 | Review previous day briefly and solution of previous exercise |         |
+| 10:45 | Morning break                            |                              |
+| 11:00 | Managed memory                           |                              |
+|       | Exercise on managed memory               | [section-2.04](section-2.04) |
+| 12:00 | Lunch                                    |                              |
+| 13:00 | Shared memory                            |                              |
+|       | Exercise on vector product               | [section-2.05](section-2.05) |
+| 13:45 | Constant memory                          |                              |
+|       | All together: matrix-vector product      | [section-2.06](section-2.06) |
+| 14:30 | Afternoon break                          |                              |
+| 14:45 | Streams                                  |                              |
+|       | Using `hipMempcyAsync()` etc             | [section-4.01](section-4.01) |
+| 16:00 | Close                                    |                              |
+
+### Day three
 
 
 | Time  | Content                                  | Section                      |
 |-------|------------------------------------------|------------------------------|
-| 09:30 | Streams                                  |                              |
-|       | Using `hipMempcyAsync()` etc             | [section-4.01](section-4.01) |
-| 10:00 | Graph API                                |                              |
+| 10:00 | Review previous day briefly and solution of previous exercise |         |
+| 10:45 | Morning break                            |                              |
+| 11:00 | Graph API                                |                              |
 |       | Using `hipGraphLaunch()` etc             | [section-4.02](section-4.02) |
-| 11:00 | Break                                    |                              |
-| 11:30 | Device management: more then one GPU     |                              |
+| 12:00 | Lunch                                    |                              |
+| 13:00 | Device management: more then one GPU     |                              |
 |       | `hipMemcpy()` again                      | [section-5.01](section-5.01) |
-| 12:15 | Lunch                                    |                              |
-| 13:00 | Putting it all together                  |                              |
+| 14:00 | Afternoon break                          |                              |
+| 14:15 | Putting it all together	               |                              |
 |       | Conjugate gradient exercise              | [section-6.01](section-6.01) |
-| 15:00 | Close                                    |                              |
+| 16:00 | Close                                    |                              |
 
 
 ---
