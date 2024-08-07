@@ -40,7 +40,7 @@ there may be little benefit in using a GPU.
 ### Two dimensional example
 
 Consider a two-dimensional loop:
-```
+```cpp
    int NX = 512;
    int NY = 512;
    ...
@@ -69,7 +69,7 @@ CUs.
 A given thread in a CPU code favours consecutive memory accesses.
 E.g., in C, recall that it is the right-most index that runs
 fastest in memory.
-```
+```cpp
    for (int i = 0; i < NX; i++) {
      for (int j = 0; j < NY; j++) {
        a[i][j] = 0.0;
@@ -87,7 +87,7 @@ to have waveforms of consecutive threads load consecutive memory
 locations in a contiguous block.
 
 Consider a one-dimensional example:
-```
+```cpp
   int i = blockIdx.x*blockDim.x + threadIdx.x;
 
   a_output[i] = a_input[i];
@@ -99,7 +99,7 @@ x-index) access consecutive memory locations.
 ### Two dimensions again
 
 Consider first:
-```
+```cpp
   int i = blockIdx.x*blockDim.x + threadIdx.x;
 
   for (int j = 0; j < NY; j++) {
@@ -110,7 +110,7 @@ Here, a given thread makes `NY` consecutive accesses to the arrays. This
 does not favour coalesced access.
 
 We want consecutive threads to have consecutive accesses, e.g.,
-```
+```cpp
   int j = blockIdx.x*blockDim.x + threadIdx.x;
 
   for (int i = 0; i < NX; i++) {
@@ -124,21 +124,19 @@ thread making a strided memory access.
 
 ## Exercise (30 minutes)
 
-The following exercise will examine the issue of paralllem and occupancy.
-The the current directory is a template `exercise_dger.hip.cpp` in which you
+The following exercise will examine the issue of parallelism and occupancy.
+The current directory is a template `exercise_dger.hip.cpp` in which you
 are asked to implement a kernel which computes the following matrix
 operation
-```
-  A_ij := A_ij + alpha x_i y_j
-```
-for a matrix A with m rows and n columns, a vector `x` of length m, a
-vector `y` of length n, and constant `alpha`. The data type is
+$$A_{ij} = A_{ij} + \alpha x_i y_j$$
+for a matrix $A$ with `m` rows and `n` columns, a vector $x$ of length `m`, a
+vector $y$ of length `n`, and constant $\alpha$. The data type is
 `double` in all cases.
 
-For the matrix `a` we will adopted a flattened one-dimensional indexing
+For the matrix $A$, we will adopt a flattened one-dimensional indexing
 for which element row `i` and column `j` is addressed as `a[i*ncol + j]`.
 
-As this is partly a performance issue (a correct answer is also required!)
+As this is partly a performance issue (a correct answer is also required!),
 we will implement some simple profiling by adding `rocprof` to the submission
 script.
 
@@ -150,7 +148,7 @@ kernel at each stage (reported in nanoseconds, `ns` by `rocprof`).
 A suggested procedure is:
 1. Check the template to see that the matrix and vectors have been established
    in device memory. Note that the template uses the HIP API call
-   ```
+   ```cpp
       hipError_t hipMemset(void * dptr, int value, size_t sizeBytes);
    ```
    to initialise all the device matrix elements to zero directly. The template
@@ -158,7 +156,7 @@ A suggested procedure is:
    kernel stub supplied does nothing.
 2. Implement the most simple kernel in which the update is entirely
    serialised. E.g.,
-   ```
+   ```cpp
    int tid = blockIdx.x*blockDim.x + threadIdx.x;
 
    if (tid == 0) {
@@ -180,7 +178,7 @@ A suggested procedure is:
 4. In addition, eliminate the `j`-loop to have parallelism over
    both rows and columns. You will need to introduce two dimensions
    in the abstract description, e.g., via
-   ```
+   ```cpp
    int j = blockIdx.y*blockDim.y + threadIdx.y;
    ```
    and make an appropriate adjustment to the kernel launch parameters.

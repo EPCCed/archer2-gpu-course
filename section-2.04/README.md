@@ -10,7 +10,7 @@ Different mechanisms may be favoured in different situations.
 We have seen the explicit mechanics of using standard C pointers.
 Schematically:
 
-```c
+```cpp
   double *h_ptr = NULL;
   double *d_ptr = NULL;
 
@@ -22,7 +22,7 @@ Schematically:
 
 The host pointer to the device memory is then used in the kernel invocation.
 
-```c
+```cpp
   myKernel<<<...>>>(d_ptr);
 ```
 
@@ -41,7 +41,7 @@ reference in the code (`h_ptr` and `d_ptr`).
 
 Managed memory is allocated on the host via
 
-```c
+```cpp
 __host__ hipError_t hipMallocManaged(void **ptr, size_t sz);
 ```
 
@@ -54,7 +54,7 @@ Host/device transfers are managed automatically as the need arises.
 
 So, a schematic of usage might be:
 
-```c
+```cpp
   double *ptr = NULL;
 
   hipMallocManaged(&ptr, nbytes);
@@ -73,7 +73,7 @@ So, a schematic of usage might be:
 
 Managed memory established with `hipMallocManaged()` is released with
 
-```c
+```cpp
   hipFree(ptr);
 ```
 
@@ -106,7 +106,7 @@ If the programmer knows in advance that memory is required on the
 device before kernel execution, a prefetch to the destination
 device may be issued. Schematically:
 
-```c
+```cpp
   hipGetDevice(&device);
   hipMallocManaged(&ptr, nbytes);
 
@@ -135,7 +135,7 @@ under development for Windows.
 Another mechanism to help the HIP run-time is to provide "advice".
 This is done via
 
-```c
+```cpp
   __host__ hipError_t hipMemAdvise(const void *ptr, size_t sz,
                                    hipMemoryAdvise advice, int device);
 ```

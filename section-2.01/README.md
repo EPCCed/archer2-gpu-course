@@ -12,14 +12,14 @@ We need to take appropriate action in our code.
 ## What to include and what not to include
 
 A standard C/C++ source file may include
-```
+```cpp
 #include “hip/hip_runtime.h”
 ```
 which is usually relevant for programs to be compiled by `hipcc`.
 
 
 There is also a subset
-```
+```cpp
 #include "hip_runtime_api.h"
 ```
 which is the C/C++ interface which does not need to be compiled with `hipcc`.
@@ -64,7 +64,7 @@ We will look at the explicit mechanism first.
 
 Declaration is via standard C/C++ data types and pointers, e.g.,
 
-```c
+```cpp
   double *data = NULL;   /* Device data */
 
   err = hipMalloc(&data, nArray*sizeof(double));
@@ -83,7 +83,7 @@ We will return to error handling below.
 
 Assuming we have established some data on the host, copies are
 via `hipMemcpy()`. Schematically,
-```c
+```cpp
   err = hipMemcpy(data, hostdata, nArray*sizeof(double),
                    hipMemcpyHostToDevice);
 
@@ -97,7 +97,7 @@ These are *blocking* calls: they will not return until the data has been
 stored in GPU memory (or and error has occurred).
 
 Formally, the API reads
-```c
+```cpp
 hipError_t hipMemcpy(void *dest, void *src, size_t sz,
                        hipMemcpyKind direction);
 ```
@@ -109,7 +109,7 @@ It is important to check the return value against `hipSuccess`.
 
 If an error occurs, the error code can be interrogated to provide
 some meaningful information. E.g. use
-```c
+```cpp
 const char *hipGetErrorName(hipError_t err);    /* Name */
 const char *hipGetErrorString(hipError_t err);  /* Descriptive string */
 ```
@@ -118,7 +118,7 @@ const char *hipGetErrorString(hipError_t err);  /* Descriptive string */
 
 The requirement for error handling often appears in real code
 as a macro, e.g.,
-```c
+```cpp
   HIP_ASSERT( hipMalloc(&data, nArray*sizeof(double) );
 ```
 
@@ -154,8 +154,8 @@ First, check you can compile and run the unaltered template code in
 the queue system.
 
 Recall that we should use
-```
-$ CC -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH} exercise_dscal.hip.cpp
+```bash
+hipcc -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH} -D__HIP_PLATFORM_AMD__ --offload-arch=gfx90a exercise_dscal.hip.cpp
 ```
 and submit to the queue system using the script provided. If the code has run
 correctly, you should see in the output something like:

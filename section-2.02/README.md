@@ -11,7 +11,7 @@ independent iterations between threads in parallel.
 ## A simple example
 
 Consider the following loop in C:
-```
+```cpp
   for (int i = 0; i < ARRAY_LENGTH; i++) {
     result[i] = 2*i;
   }
@@ -21,7 +21,7 @@ attempt to run each iteration in parallel.
 
 In HIP, we would we need to take two steps. First, we write
 a kernel function which expresses the body of the loop:
-```
+```cpp
   __global__ void myKernel(int *result) {
 
     int i = threadIdx.x;
@@ -37,7 +37,7 @@ provides to allow us to identify the thread.
 The second step is to execute, or *launch*, the kernel on the GPU.
 This is done by specifying the number of blocks, and the number
 of threads per block:
-```
+```cpp
   dim3 blocks = {1, 1, 1};
   dim3 threadsPerBlock = {ARRAY_LENGTH, 1, 1};
 
@@ -53,7 +53,7 @@ threads for the problem at hand (i.e., `ARRAY_LENGTH`). This is
 only valid if `ARRAY_LENGTH` is the number of threads per block.
 
 We have introduced the structure
-```
+```cpp
   struct {
     unsigned int x;
     unsigned int y;
@@ -68,7 +68,7 @@ C++ style constructors.
 
 If we want to have a large problem, we need more blocks. Usually, for
 a large array, we want very many blocks, e.g.,
-```
+```cpp
   __global__ void myKernel(int *result) {
 
     int i = blockIdx.x*blockDim.x + threadIdx.x;
@@ -76,7 +76,7 @@ a large array, we want very many blocks, e.g.,
   }
 ```
 would could have execution configuration
-```
+```cpp
   threadsPerBlock.x = THREADS_PER_BLOCK;
   blocks.x          = ARRAY_LENGTH/THREADS_PER_BLOCK;
 
@@ -96,7 +96,7 @@ divisible by `THREADS_PER_BLOCK`.
 A number of internal variables are made available by the HIP
 runtime and can be used in the kernel to locate a given
 thread's position in the abstract grid picture:
-```
+```cpp
   dim3 gridDim;     /* The number of blocks */
   dim3 blockDim;    /* The number of threads per block */
 
@@ -114,8 +114,7 @@ These names should be considered reserved.
 Kernel launches are asynchronous on the host. The launch will return
 immediately. In order to be sure that the kernel has actually
 completed, we need synchronisation.
-```
-
+```cpp
   myKernel<<< blocks, threadsPerBlock >>>(arg1, arg2, arg3);
 
   /* ... returns immediately */
@@ -131,7 +130,7 @@ completed, we need synchronisation.
 Errors occurring in the kernel execution are also asynchronous, which
 can cause some confusion. As a result, one will sometimes see this
 usage:
-```
+```cpp
   myKernel<<< blocks, threadsPerBlock >>>(arg1, arg2, arg3);
 
   HIP_ASSERT( hipPeekAtLastError() );
@@ -160,7 +159,7 @@ part in this directory.
 ### Suggested procedure
 
 1. Write a kernel of the prototype
-```
+```cpp
   __global__ void myKernel(double a, double *x);
 ```
 to perform the scale operation on a given element of the array.
@@ -205,7 +204,7 @@ All kernels must be declared `void`. Why do you think this is the case?
 
 Adapt your program to try another simple level one BLAS routine, which
 we will take to have the prototype:
-```
+```cpp
   void daxpy(int nlen, double a, const double * x, double * y);
 ```
 This is the operation `y := ax + y` where `y` is incremented, and `x` is
@@ -217,8 +216,8 @@ configuration ```<<<...>>>```, one can also use the `hipLaunchKernelGGL()`
 macro. However, this is slightly more awkward.
 
 The prototype expected is:
-```
-  hipError_t hipLaunchKernel(const void *func, dim3 blocks, dim3 threads, 
+```cpp
+  hipError_t hipLaunchKernelGGL(const void *func, dim3 blocks, dim3 threads, 
                             size_t dynamicShared, hipStream_t stream, args...);
 ```
 The kernel function is `func`, while the second and third arguments are the
@@ -229,6 +228,6 @@ where the kernel should execute. `hipLaunchKernelGGL` macro always starts with
 the five parameters specified above, followed by the kernel arguments.
 
 So for our first kernel:
-```
+```cpp
   hipLaunchKernelGGL(myKernel, blocks, threadsPerBlock, 0, 0, a, d_x); 
 ```

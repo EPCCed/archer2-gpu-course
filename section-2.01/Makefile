@@ -1,10 +1,9 @@
-CC = CC
-CXXFLAGS = -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH}
+CC = hipcc
+CXXFLAGS = -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH} -D__HIP_PLATFORM_AMD__ --offload-arch=gfx90a
+SRC=$(wildcard *.cpp)
 
-all: exercise_dscal
-
-exercise_dscal: exercise_dscal.hip.cpp
-	$(CC) $(CXXFLAGS) exercise_dscal.hip.cpp
+a.out: $(SRC)
+        $(CC) $(CXXFLAGS) $^
 
 clean:
-	rm -f a.out
+        rm -f a.out

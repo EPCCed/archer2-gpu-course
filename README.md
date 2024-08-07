@@ -65,7 +65,7 @@ Check you can compile and run a very simple program
 and submit the associated script to the queue system.
 ```
 cd section-2.01
-CC -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH} exercise_dscal.hip.cpp
+hipcc -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH}  -D__HIP_PLATFORM_AMD__ --offload-arch=gfx90a exercise_dscal.hip.cpp
 sbatch submit.sh
 ```
 
