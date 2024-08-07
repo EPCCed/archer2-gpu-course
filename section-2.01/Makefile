@@ -3,7 +3,7 @@ CXXFLAGS = -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH} -D__HIP_P
 SRC=$(wildcard *.cpp)
 
 a.out: $(SRC)
-        $(CC) $(CXXFLAGS) $^
+	$(CC) $(CXXFLAGS) $^
 
 clean:
-        rm -f a.out
+	rm -f a.out
