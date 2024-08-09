@@ -21,7 +21,7 @@ for which a solution is provided in the current directory.
 The second step is to compute a scalar residual from a vector
 residual. If we have a vector `r` of length `n` this can be
 done in serial with:
-```
+```cpp
   residual = 0.0;
   for (int i = 0; i < n; i++) {
     residual += r[i]*r[i];

@@ -8,7 +8,7 @@
 #SBATCH --qos=gpu-shd
 
 # Check assigned GPU
-srun --ntasks=1 rocm-smi
+rocm-smi
 
 srun --ntasks=1 --cpus-per-task=1 ./a.out
 

@@ -17,7 +17,7 @@
  * the flattened one-dimensional index A_ij = a[i*ncol + j] with ncol
  * the number of columns n.
  *
- * An entirely serial kernel is provided below.
+ * An extirely serial kernel is provided below.
  *
  * Training material developed by Nick Johnson and Kevin Stratford
  * Copyright EPCC, The University of Edinburgh, 2010-2023
@@ -44,9 +44,8 @@ __host__ void myErrorHandler(hipError_t ifail, std::string file, int line,
 #define THREADS_PER_BLOCKX 16
 #define THREADS_PER_BLOCKY 16
 
-/* An entirely serial kernel. */
-__global__ void myKernel(int mrow, int ncol, double alpha, double *a, double *x,
-                         double *y) {
+__global__ void myKernel0(int mrow, int ncol, double alpha, double *a,
+                          double *x, double *y) {
 
   int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -59,6 +58,109 @@ __global__ void myKernel(int mrow, int ncol, double alpha, double *a, double *x,
       y[i] += alpha * sum;
     }
   }
+  return;
+}
+
+/* After step 1 in the instructions */
+
+__global__ void myKernelStep1(int mrow, int ncol, double alpha, double *a,
+                              double *x, double *y) {
+
+  int i = blockDim.x * blockIdx.x + threadIdx.x;
+  int j = blockDim.y * blockIdx.y + threadIdx.y;
+
+  int tidj = threadIdx.y;
+
+  __shared__ double tmp[THREADS_PER_BLOCK];
+
+  assert(gridDim.x == mrow);
+  assert(blockDim.x == 1);
+
+  tmp[tidj] = 0.0;
+  if (i < mrow && j < ncol) {
+    tmp[tidj] += a[i * ncol + j] * x[j];
+  }
+
+  __syncthreads();
+
+  /* Thread 0 in each row (block) can accumulate the contribution */
+  if (tidj == 0) {
+    double sum = 0.0;
+    for (int it = 0; it < blockDim.y; it++) {
+      sum += tmp[it];
+    }
+    atomicAdd(y + i, alpha * sum);
+  }
+
+  return;
+}
+
+/* After step 2 in the instructions */
+
+__global__ void myKernelStep2(int mrow, int ncol, double alpha, double *a,
+                              double *x, double *y) {
+
+  int i = blockIdx.x * blockDim.x + threadIdx.x;
+  int j = blockIdx.y * blockDim.y + threadIdx.y;
+
+  int tidx = threadIdx.x;
+  int tidy = threadIdx.y;
+
+  __shared__ double tmp[THREADS_PER_BLOCKX][THREADS_PER_BLOCKY];
+
+  tmp[tidx][tidy] = 0.0;
+
+  if (i < mrow && j < ncol) {
+    tmp[tidx][tidy] = a[i * ncol + j] * x[j];
+  }
+
+  __syncthreads();
+
+  /* One thread per block accumulates per row ... */
+  if (tidy == 0) {
+    double sumrow = 0.0;
+    for (int ity = 0; ity < blockDim.y; ity++) {
+      sumrow += tmp[tidx][ity];
+    }
+
+    atomicAdd(y + i, alpha * sumrow);
+  }
+
+  return;
+}
+
+/* Step 3: And rotate the indices to admit coalescing */
+
+__global__ void myKernelStep3(int mrow, int ncol, double alpha, double *a,
+                              double *x, double *y) {
+
+  /* Retain (i,j) as (row,column) of matrix but let j run fastest */
+  int j = blockIdx.x * blockDim.x + threadIdx.x;
+  int i = blockIdx.y * blockDim.y + threadIdx.y;
+
+  int tidj = threadIdx.x;
+  int tidi = threadIdx.y;
+
+  __shared__ double tmp[THREADS_PER_BLOCKY][THREADS_PER_BLOCKX];
+
+  tmp[tidi][tidj] = 0.0;
+
+  if (i < mrow && j < ncol) {
+    tmp[tidi][tidj] = a[i * ncol + j] * x[j];
+  }
+
+  __syncthreads();
+
+  /* One thread per block accumulates per row ... */
+  if (tidj == 0) {
+    double sumrow = 0.0;
+    for (int it = 0; it < blockDim.x; it++) {
+      sumrow += tmp[tidi][it];
+    }
+
+    atomicAdd(y + i, alpha * sumrow);
+  }
+
   return;
 }
 
@@ -122,7 +224,7 @@ int main(int argc, char *argv[]) {
 
   static __constant__ double data_read_only[3];
   double values[3] = {1.0, 2.0, 3.0};
-  hipMemcpyToSymbol(data_read_only, values, 3*sizeof(double));
+  hipMemcpyToSymbol(data_read_only, values, 3 * sizeof(double));
 
   /*
    * allocate memory on device
@@ -139,11 +241,12 @@ int main(int argc, char *argv[]) {
 
   /* Kernel */
 
-  uint nblockx = 1;
-  dim3 blocks = {nblockx, 1, 1};
-  dim3 threadsPerBlock = {THREADS_PER_BLOCK, 1, 1};
+  uint nblocky = 1 + (mrow - 1) / THREADS_PER_BLOCKX;
+  uint nblockx = 1 + (ncol - 1) / THREADS_PER_BLOCKY;
+  dim3 blocks = {nblockx, nblocky, 1};
+  dim3 threadsPerBlock = {THREADS_PER_BLOCKX, THREADS_PER_BLOCKY, 1};
 
-  myKernel<<<blocks, threadsPerBlock>>>(mrow, ncol, alpha, d_a, d_x, d_y);
+  myKernelStep3<<<blocks, threadsPerBlock>>>(mrow, ncol, alpha, d_a, d_x, d_y);
 
   /* wait for all threads to complete and check for errors */
 
@@ -166,7 +269,7 @@ int main(int argc, char *argv[]) {
       if (fabs(yi - h_y[i]) < DBL_EPSILON)
         ncorrect += 1;
       /* Can be uncommented to debug ... */
-      /* printf("Row %5d %14.7e %14.7e\n", i, yi, h_y[i]); */
+      /* printf("Row %5d %14.7e %14.7e\n", i, y, h_y[i]); */
     }
     std::cout << "No. rows " << mrow << ", and correct rows " << ncorrect
               << std::endl;

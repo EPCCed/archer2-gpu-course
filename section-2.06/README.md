@@ -11,6 +11,21 @@ This can provide fast (read-only) access to frequently used values.
 It is a limited resource (exact capacity may depend on particular
 hardware).
 
+Key characteristics:
+1. **Read-Only**: Constant memory is read-only for the GPU kernels. It is written to by the host (CPU) before the kernel execution.
+2. **Cached**: It is cached on-chip, which means that access to constant memory is much faster than access to global memory.
+3. **Limited size**: The size of constant memory is limited, typically around 64KB, depending on the GPU architecture.
+
+Benefits of using constant memory:
+1. **Broadcasting**: When all threads in a warp access the same address in constant memory, the value is broadcast to all threads, resulting in a single memory read.
+2. **Reduced latency**: Accessing constant memory is faster than accessing global memory due to its caching mechanism.
+3. **Efficiency**: It is ideal for storing constants that are used by all threads, such as coefficients in mathematical formulas.
+
+Common use cases:
+1. **Lookup tables**: Storing lookup tables that are frequently accessed by the kernel.
+2. **Constants**: Storing constants that are used across many threads, such as physical constants or coefficients.
+3. **Configuration data**: Storing configuration parameters that do not change during kernel execution.
+
 ## Kernel parameters
 
 If one calls a kernel function, actual arguments are (conceptually, at

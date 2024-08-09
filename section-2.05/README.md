@@ -1,13 +1,12 @@
 # Shared memory
 
-So far we have seen "global" memory, which is allocated by some
+So far we have seen **global** memory, which is allocated by some
 mechanism on the host, and is available in the kernel.
 
 We have also used local variables in the kernel, which appear
 on the stack in the expected fashion. Local variables are expected
-to be held in registers and
-take on a distinct value for each thread, e.g.,
-```c
+to be held in registers and take on a distinct value for each thread, e.g.,
+```cpp
   int i = blockDim.x*blockIdx.x + threadIdx.x;
 ```
 
@@ -15,18 +14,17 @@ While global memory is shared between all threads, the usage of
 'shared memory' is reserved for something more specific in the
 GPU context. This is discussed below.
 
-
 ## Independent accesses to global memory
 
 In what we have seen so far, kernels have been used to replace
-loops with independent iterations, e.g.,
-```c
+loops with independent iterations. For instance,
+```cpp
   for (int i = 0; i < ndata; i++) {
     data[i] = 2.0*data[i];
   }
 ```
 is replaced by a kernel with the body
-```c
+```cpp
   int i = blockDim.x*blockIdx.x + threadIdx.x;
 
   data[i] = 2.0*data[i];
@@ -37,7 +35,7 @@ memory, there are no potential conflicts.
 ### A different pattern
 
 Consider a loop with the following pattern
-```c
+```cpp
   double sum = 0.0;
   for (int i = 0; i < ndata; i++) {
     sum += data[i];
@@ -46,9 +44,8 @@ Consider a loop with the following pattern
 The iterations are now coupled in some sense: all must accumulate
 a value to the single memory location `sum`.
 
-What would happen if we tried to run a kernel of the following
-form?
-```c
+What would happen if we tried to run a kernel of the following form?
+```cpp
   __global__ myKernel(int ndata, double *data, double *sum) {
 
     int i = blockIdx.x*blockDim.x + threadIdx.x;
@@ -61,7 +58,7 @@ form?
 
 The problem lies in the fact that the increment is actually a
 number of different operations which occur in order.
-```c
+```cpp
    *sum += ndata[i];
 ```
 1. Read the current value of `sum` from memory into a register;
@@ -82,7 +79,7 @@ operations happen in the correct order.
 
 For global memory, we require a so-called *atomic* update. For our
 example above:
-```c
+```cpp
   *sum += data[i];            /* WRONG: unsafe update */
   atomicAdd(sum, data[i]);    /* Correct: atomic update */
 ```
@@ -97,7 +94,7 @@ So the atomic update is a single unified operation on a single thread:
 ### Note
 
 `atomicAdd()` is an overloaded device function:
-```c
+```cpp
 __device__ int atomicAdd(int *address, int value);
 __device__ double atomicAdd(double *address, double value);
 ```
@@ -108,15 +105,39 @@ and so on. The old value of the target variable is returned.
 
 There is an additional type of shared memory available in kernels
 introduced using the `__shared__` memory space qualifier. E.g.,
-```c
+```cpp
   __shared__ double tmp[THREADS_PER_BLOCK];
 ```
-These values are shared only between threads in the same block.
+Shared memory is a type of memory that is accessible by all threads within the
+same block in a GPU. It is faster than global memory because it is located
+on-chip, close to the processing cores. This makes it ideal for storing data
+that needs to be frequently accessed by multiple threads.
 
-Potential uses:
-1. marshalling data within a block;
-2. temporary values (particularly if there is significant reuse);
-3. contributions to reduction operations.
+Common use cases:
+1. **Matrix Multiplication**: Shared memory can be used to store sub-matrices,
+reducing the number of global memory accesses and improving performance.
+2. **Stencil Computations**: In algorithms that require neighbouring data
+points, shared memory can store these points, allowing for faster access.
+3. **Reduction Operations**: Shared memory is often used in parallel reduction
+algorithms to combine results from multiple threads efficiently.
+
+Benefits of using shared memory:
+1. **Reduced Latency**: Accessing shared memory is much quicker than accessing
+global memory, reducing the latency in data retrieval.
+2. **Efficient Data Sharing**: It allows for efficient sharing of data among
+threads within the same block, which can significantly improve performance for
+certain algorithms.
+3. **Synchronisation**: Threads within a block can synchronize their operations
+using shared memory, ensuring that all threads have a consistent view of the
+data.
+
+Key characteristics:
+1. **Speed**: Shared memory is significantly faster than global memory, which is
+located off-chip. This speed advantage is due to its proximity to the GPU cores.
+2. **Limited Size**: Shared memory is limited in size, typically ranging from
+48KB to 96KB per block, depending on the GPU architecture.
+3. **Scope**: It is only accessible by threads within the same block, making it
+ideal for data that needs to be shared among these threads.
 
 Note: in the above example we have fixed the size of the `tmp`
 object at compile time ("static" shared memory).
@@ -125,7 +146,7 @@ object at compile time ("static" shared memory).
 
 There are quite a large number of synchronisation options for
 threads within a block in HIP. The essential one is probably
-```c
+```cpp
   __syncthreads();
 ```
 This is a barrier-like synchronisation which says that all
@@ -135,7 +156,7 @@ statement before any are allowed to continue.
 
 ### Example
 Here is a (slightly contrived) example:
-```c
+```cpp
 /* Reverse elements so that the order 0,1,2,3,...
  * becomes ...,3,2,1,0
  * Assume we have one block. */
@@ -157,7 +178,7 @@ __global__ void reverseElements(int *myArray) {
 
 The usual considerations apply when thinking about thread
 synchronisation. E.g.,
-```c
+```cpp
    if (condition) {
       __syncthreads();
    }
@@ -166,9 +187,12 @@ There is a potential for deadlock.
 
 ### Branch divergence
 
+Branch divergence can significantly impact GPU performance due to the way GPUs
+execute instructions. Branch divergence occurs when different threads within the same warp (a group of threads that execute instructions in lock-step) take different execution paths due to conditional statements like `if-else`.
+
 It is beneficial for performance to avoid "wavefront divergence"
 e.g.,
-```c
+```cpp
   int tid = blockIdx.x*blockDim.x + threadIdx.x;
 
   if (tid % 2 == 0) {
@@ -178,8 +202,9 @@ e.g.,
     /* threads 1, 3, 5 ... *.
   }
 ```
-may cause serialisation. For this reason you may see things
-like
+may cause serialisation. If half the threads in a warp process even numbers and the other half process odd numbers, the warp will first execute the instructions for even numbers while the odd-number threads are idle, and then execute the instructions for odd numbers while the even-number threads are idle. This results in inefficient use of the GPU's resources.
+
+For this reason you may see things like
 ```c
   int tid = blockIdx.x*blockDim.x + threadIdx.x;
 
@@ -190,7 +215,9 @@ like
      /* threads 32, 33, 34, ... */
   }
 ```
-where `warpSize`(a.k.a wave size) is another special value provided by HIP/CUDA.
+where `warpSize`(a.k.a. wavesize) is another special value provided by HIP/CUDA.
+
+To mitigate branch divergence, organize data such that threads within the same warp are more likely to follow the same execution path. Where possible, reduce the use of conditional statements within kernels.
 
 ## Other potential performance concerns
 

@@ -46,7 +46,7 @@ For details of how to log into an ARCHER2 account, see the
 [ARCHER2 quickstart for users.](https://docs.archer2.ac.uk/quick-start/quickstart-users/)
 
 Check out the Git repository to your ARCHER2 account.
-```
+```bash
 cd ${HOME/home/work}
 git clone https://github.com/EPCCed/archer2-gpu-course.git
 cd archer2-gpu-course
@@ -54,7 +54,7 @@ cd archer2-gpu-course
 
 For the examples and exercises in the course, we will use the
 AMD compiler driver. To access this
-```
+```bash
 module load PrgEnv-amd
 module load rocm
 module load craype-accel-amd-gfx90a
@@ -63,7 +63,7 @@ module load craype-x86-milan
 
 Check you can compile and run a very simple program
 and submit the associated script to the queue system.
-```
+```bash
 cd section-2.01
 hipcc -x hip -std=c++11 -D__HIP_ROCclr__ --rocm-path=${ROCM_PATH}  -D__HIP_PLATFORM_AMD__ --offload-arch=gfx90a exercise_dscal.hip.cpp
 sbatch submit.sh

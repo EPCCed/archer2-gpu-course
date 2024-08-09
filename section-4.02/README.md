@@ -27,7 +27,7 @@ them as edges connecting the relevant nodes.
 
 There is the assumption that there is a beginning and an end (ie., there
 is a direction), and that there are no closed loops in the graph picture.
-This gives rise to a *directed acyclic graph*, or DAG.
+This gives rise to a *Directed Acyclic Graph*, or DAG.
 
 The idea is then to construct a description of the graph from the
 constituent nodes and dependencies, and then execute the graph.
@@ -35,18 +35,18 @@ constituent nodes and dependencies, and then execute the graph.
 ### Creating a HIP graph
 
 The overall container for a graph is of type
-```
+```cpp
   hipGraph_t graph;
 ```
 and is allocated in an empty state via the API function
-```
+```cpp
   __host__ hipError_t hipGraphCreate(hipGraph_t *graph, unsigned int flags);
 ```
 
 The only valid value for the second argument is `flags = 0`.
 
 For example, the life-cycle would typically be:
-```
+```cpp
   hipGraph_t myGraph;
 
   hipGraphCreate(&myGraph, 0);
@@ -63,7 +63,7 @@ Destroying the graph will also release any component nodes/dependencies.
 Having created a graph object, one needs to add nodes and dependencies
 to it. When this has been done (adding nodes etc will be discussed below),
 one creates an executable graph object
-```
+```cpp
   hipGraphExec_t graphExec;
 
   hipGraphInstantiate(&graphExec, myGraph, NULL, NULL, 0);
@@ -101,7 +101,7 @@ those we have seen for `hipMemcpy()` before.
 ### Kernel node
 
 Suppose we have a kernel function with arguments
-```
+```cpp
   __global__ void myKernel(double a, double * x);
 ```
 and which is executed with configuration including `blocks` and
@@ -109,14 +109,14 @@ and which is executed with configuration including `blocks` and
 
 These parameters are described in HIP by a structure `hipKernelNodeParams`
 which includes the public members:
-```
+```cpp
    void *func;             /* pointer to the kernel function */
    void **kernelParams;    /* List of kernel arguments */
    dim3 gridDim;           /* Number of blocks */
    dim3 blockDim;          /* Number of threads per block */
 ```
 So, with the relevant host variables in scope, we might write
-```
+```cpp
   hipKernelNodeParams kParams = {0};    /* Initialise to zero */
   void * args[] = {&a, &d_x};           /* Kernel arguments */
 
@@ -127,7 +127,7 @@ So, with the relevant host variables in scope, we might write
 ```
 We are now ready to add a kernel node to the graph (assumed to
 be `myGraph`):
-```
+```cpp
   hipGraphNode_t kNode;     /* handle to the new kernel node */
 
   hipGraphAddKernelNode(&kNode, myGraph, NULL, 0, &kParams);
@@ -136,7 +136,7 @@ This creates a new kernel node, adds it to the existing graph, and
 returns a handle to the new node.
 
 The formal description is
-```
+```cpp
 __host__ hipError_t hipGraphAddKernelNode(hipGraphNode_t *node,
                                           hipGraph_t graph,
 					                                const hipGraphNode_t *dependencies,
@@ -150,23 +150,26 @@ fourth arguments can be `NULL` and zero, respectively.
 
 There is a similar procedure to define a `memcpy` node. We need the
 structure `hipMemcpy3DParms` (sic) with relevant public members
-```
-  struct hipPos          dstPos;       /* offset in destination */
-  struct hipPitchedPtr   dstptr;       /* address and length in destination */
-  struct hipExtent       extent;       /* dimensions of block */
-  hipMemcpykind          kind;         /* direction of the copy */
+```cpp
   struct hipPos          srcPos;       /* offset in source */
   struct hipPitchedPtr   srcPtr;       /* address and length in source */
+  struct hipPos          dstPos;       /* offset in destination */
+  struct hipPitchedPtr   dstPtr;       /* address and length in destination */
+  struct hipExtent       extent;       /* dimensions of block */
+  enum hipMemcpykind       kind;         /* direction of the copy */
+
 ```
 This is rather involved, as it must allow for the most general
 type of copy allowed in the HIP API.
 
+Further details can be found on [hipMemcpy3DParms Struct Reference.](https://rocm.docs.amd.com/projects/HIP/en/latest/doxygen/html/structhip_memcpy3_d_parms.html)
+
 To make this more concrete, consider an explicit `hipMemcpy()` operation
-```
+```cpp
   hipMemcpy(d_ptr, h_ptr, ndata*sizeof(double), hipMemcpyHostToDevice);
 ```
 We should then define something of the form
-```
+```cpp
   hipGraphNode_t node;
   hipMemcpy3DParms mParams = {0};
 
@@ -181,7 +184,7 @@ For simple one-dimensional allocations, it is possible to write some
 simple helper functions to hide this complexity.
 
 The information is added via:
-```
+```cpp
   hipGraphAddMemcpyNode(&mNode, myGraph, &kNode, 1, &mParams);
 ```
 where we have made it dependent on the preceding kernel node.
@@ -195,11 +198,11 @@ https://rocm.docs.amd.com/projects/HIP/en/latest/doxygen/html/annotated.html
 ## Synchronisation
 
 If executing a graph in a particular stream, one can use
-```
+```cpp
   hipStreamSynchronize(stream);
 ```
 to ensure that the graph is complete. It is also possible to use
-```
+```cpp
   hipDeviceSynchronize();
 ```
 which actually synchronises all streams running on the current
@@ -211,7 +214,7 @@ device.
 The exercise revisits again the problem for `A_ij := A_ij + x_i y_j`,
 and the exercise is to see whether you can replace the single
 kernel launch with the execution of a graph. When you have a
-working program, check with rocprof that this is doing what
+working program, check with `rocprof` that this is doing what
 you expect.
 
 A new template is supplied if you wish to start afresh.

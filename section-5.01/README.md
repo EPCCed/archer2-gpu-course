@@ -4,7 +4,7 @@
 
 The number of GPUs currently available to the host can be obtained
 via the API call
-```c
+```cpp
   int ndevice = -1;
   hipGetDeviceCount(&ndevice);
 ```
@@ -13,7 +13,7 @@ by the scheduling system, or some other external consideration.
 
 Devices are numbered logically `0,1,2, ..., ndevice-1`. The identity
 of the currently 'set' device, or current context, is
-```c
+```cpp
   int myid = -1;
   hipGetDevice(&myid);
 ```
@@ -28,12 +28,12 @@ initial context will still be device `0`, the default.
 
 We can make use of the other devices by switching context with,
 e.g.,
-```c
+```cpp
   int myid1 = 1;
   hipSetDevice(myid1);
 ```
 An API call will then refer to the new device. E.g.,
-```c
+```cpp
   double *d_data1 = NULL;
   hipMalloc(&d_data1, ndata*sizeof(double));
 ```
@@ -47,9 +47,9 @@ device.
 
 ## Peer Access
 
-If one has two memory allocations on the same GPU it is perfectly
+If one has two memory allocations on the same node, it is perfectly
 valid to do:
-```c
+```cpp
   hipMemcpy(d_ptr1, d_ptr2, sz, hipMemcpyDeviceToDevice);
 ```
 which is a copy within device memory.
@@ -65,14 +65,14 @@ This is referred to as "peer access".
 ### Querying capability
 
 In general, one should ensure peer access via:
-```c
+```cpp
   hipDeviceCanAccessPeer(int *canAccessPeer, int device1, int device2);
 ```
 where `device1` is the destination device, and `device2` is the source
 device.
 
 If available, it is possible to disable and enable the peer access using
-```c
+```cpp
   hipDeviceDisablePeerAccess(int peerDevice);
   hipDeviceEnablePeerAccess(int peerDevice, unsigned int flags);
 ```
