@@ -33,7 +33,7 @@ factors of a kernel's occupancy (see the
 how to tune the parameters that influence occupancy can lead to easy and
 dramatic performance improvements. The only thing that is likely to have a
 greater influence on performance is using sensible memory access patterns
-(see this [section](memory-usage)).
+(see this [section](#memory-usage)).
 
 Occupancy may be thought of simply as having a very high degree of thread
 parallelism. However, the degree is much higher than would be expected
