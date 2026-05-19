@@ -14,7 +14,7 @@ https://developer.nvidia.com/nsight-compute
 The first port-of-call should always be Nsight Systems.
 
 
-## Nisght Systems
+## Nsight Systems
 
 To use, compile and run as usual, and prefix the executable
 ```
@@ -25,6 +25,19 @@ read into the user interface Nsight Systems.
 
 The usual mode of operation is to copy the report file back to
 your local machine.
+
+A useful command worth knowing is:
+
+```
+nsys profile --stats=true ./a.out
+```
+
+This provides a summary output directly to your terminal. This lists the
+durations of your kernels, as well as timings for all Nvidia runtime/driver
+APIs that you have used. This information can be used to diagnose any
+associated performance issues with your usage of the runtime API such as e.g.
+managed memory usage and the influence of any
+[hints](../section-2.04/README.md#providing-hints) used.
 
 ### Adding NVTX markers
 
@@ -79,6 +92,9 @@ a real application, a small problem size should be selected in the
 first instance. One can also use filters to limit the information
 collected (e.g., for an individual kernel).
 
+`ncu` provides you with information on how your kernels are
+thread, register, or shared memory limited, as discussed in the
+[occupancy](../section-2.03/README.md#occupancy) section.
 
 ## Exercise
 

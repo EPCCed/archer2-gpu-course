@@ -10,6 +10,39 @@ Graphs can be used to orchestrate complex workflows, and may be
 particularly useful in amortising the overhead of many small
 kernel launches.
 
+This can considerably boost performance for relevant applications such as
+neural networks which often use lots of very short kernels. Improving the
+performance of such neural networks was likely the primary motivation for the
+introduction of the Graph API.
+
+A useful way to consider whether you should consider using the Graph API
+is by performing a conservative scaling analysis:
+
+The overhead of launching a kernel in CUDA or HIP is of order 1-10 microseconds
+(Typically towards the lower half of this range). The total overhead associated
+with kernel launches per "computational step" (e.g. a single time-step in a
+solver) in your program is therefore no greater than the number of kernels you
+execute per time-step, `nLaunch`, multiplied by 10 microseconds.
+Dividing this number by the total duration of your kernels per time-step (in
+units of micro-seconds), `tKernels`, gives a dimensionless quantity that can be
+used to judge the importance of the Graph API:
+
+`10 * nLaunch / tKernels`
+
+if this number is ~0.01 or less, you can expect of order a 1% speedup from
+using the Graph API. An even smaller speed-up this is very common in lots of
+scientific GPU application domains because they are often dominated by a
+small number of very highly parallelised and computationally intensive kernels.
+
+However as GPUs become larger it becomes more common that smaller problem sizes
+can take good advantage of the Graph API. This also becomes more relevant as
+GPU runtimes are becoming better at efficiently managing resources for multiple
+processes per GPU (for example multiple small uncorrelated equilibrium
+Molecular Dynamics simulations used to calculate an ensemble average). If
+unsure, it is a prudent choice to begin prototyping your application without
+the added complications of the Graph API, and then estimating the potential
+performance impact of the Graph API as outlined above.
+
 <!-- Note: the latest HIP does support a subset of Graph API operations,
 but I haven't had a chance to try it out yet. -->
 

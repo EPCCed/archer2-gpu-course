@@ -26,7 +26,16 @@ Potentially, the GPU has a lot of CUs/cores that can be used. Having very
 many blocks of work available at an one time is said to favour
 high *occupancy*.
 
-This may be thought of simply as having a very high degree of thread
+Occupancy is one of the key concepts that all GPU programmers should
+be aware of. Profilers can provide complete information regarding the limiting
+factors of a kernel's occupancy (see the
+[profiling](../section-3.01/README.md#profiling) section). Basic knowledge of
+how to tune the parameters that influence occupancy can lead to easy and
+dramatic performance improvements. The only thing that is likely to have a
+greater influence on performance is using sensible memory access patterns
+(see this [section](memory-usage)).
+
+Occupancy may be thought of simply as having a very high degree of thread
 parallelism. However, the degree is much higher than would be expected
 on the basis of a threaded CPU program (where threads is usually the
 number of cores).
@@ -61,6 +70,120 @@ This would clearly be poor occupancy.
 If we parallelised both loops, we would have 512 x 512 = 262,144 threads
 (1024 blocks). This is much better. We now have a chance to employ many
 CUs.
+
+Occupancy depends on two other constraints beyond utilising all threads in a
+CU: thread-local register usage and shared memory usage.
+
+### Thread-local memory and occupancy
+
+As well as being designed for a high degree of parallelisation, GPUs are most
+efficient for problems that have a lot of computation performed in each thread.
+For this reason CUs are allocated a lot of thread-local registers which are
+the fastest form of memory. Despite this, registers are still a limited
+resource and it is very common to run out of registers before you run out of
+threads within a CU.
+
+You have already been introduced to an example of thread-local memory in
+[this](../section-2.02/README.md#a-simple-example) example where you have:
+
+```cpp
+  __global__ void myKernel(int *result) {
+
+    int i = threadIdx.x;
+```
+
+here the variable `i` is thread-local and will normally be stored in a
+register.
+
+If you have used a profiler to identify that register usage is limiting
+occupancy there are several ways that you can reduce the amount of registers to
+boost occupancy and performance. Some ways are easy and obvious. For example,
+it is good practice to only declare a variable near to where it is being used.
+In some cases choosing a smaller block size will allow a CU to manage more
+threads simultaneously (and hence have higher occupancy) because the number of
+registers can be closer to the limit without breaching it: Consider the case
+that you have enough registers only for around 400 threads to run on a single
+CU. If you choose a block size of 256 threads you will only be able to fit one
+block on the CU. However switching to a block size of 128 threads will allow
+you to fit three blocks of 128 threads, significantly boosting the occupancy;
+providing that no other constraints apply: this brings us to shared memory!
+
+### Shared memory and occupancy
+
+"Shared memory" is an important concept in GPU programming because many important
+computational patterns are not "embarrassingly parallel": they require some
+degree of inter-thread communication. Shared memory allows this
+for threads within the same block. More complete details of shared memory will
+be provided in a later [section](../section-2.05/README.md#shared-memory).
+shared memory can be declared within a kernel body in the following way:
+
+```cpp
+  __global__ void myKernel(int *result) {
+__shared__ double sharedArray[8];
+```
+In the above example the shared memory is statically allocated at compile time.
+Like registers (and threads), shared memory is a finite resource that can limit
+occupancy.
+On AMD GPUs the amount of shared memory is a fixed quantity and considerations
+of occupancy follow the logic outlined in the previous section for registers.
+For Nvidia GPUs it is also important for programmers to be aware that the
+available amount of shared memory is something that can be dynamically tuned at
+runtime. This is because shared memory resides within the L1 cache (used to
+cache global memory within the CU) in modern Nvidia GPUs. It is possible to
+"carveout" a larger amount of shared memory at the price of reducing the L1
+cache. For details of this refer to Nvidia documentation. If shared memory is
+not a limiting resource, then you can just rely on statically allocated shared
+memory.
+
+It is also worth programmers being aware that they can choose to replace
+thread-local variables with shared variables if they are running out of
+registers but still have plenty of shared memory. Whilst shared memory is not
+designed to be used in such a thread-local way and is not as fast as registers,
+sometimes this cost can be significantly outweighed by an increase in
+occupancy.
+
+Sometimes the compiler register allocation heuristics will also prefer to use
+global memory for thread-local variables instead of running out of registers.
+Using global memory for thread-local memory operations is extremely slow. Since
+CUDA version 13.0 Nvidia introduced an option to spill registers to shared
+memory instead of global memory, which can be a good option if the compiler is
+spilling registers and you have plenty of shared memory resources left over.
+For further information see this Nvidia
+[blog](https://developer.nvidia.com/blog/how-to-improve-cuda-kernel-performance-with-shared-memory-register-spilling/).
+
+
+### Final remarks on occupancy
+
+Whilst the GPU's CUs can manage more blocks than you are ever likely to have to
+worry about, the number of wavefronts that the CUs of modern Nvidia/AMD GPUs
+can simultaneously execute is four. For this reason it is a good idea to try to
+make it possible to have a minimum block size of 128 threads for Nvidia GPUs
+and AMD (e.g. RDNA) workstation GPUs that have 32 threads per wave-front, or
+256 for AMD CDNA GPUs which have 64 threads per wave-front. Another factor to
+consider is that the block size should also be a multiple of the number of
+threads in a wavefront, since threads within a wavefront execute in lock-step.
+
+**Expert point**. For completeness there is one more factor to be aware of.
+Optimal register allocation (and register spilling) is an NP-hard problem that
+is inherently linked with ideal block-size and occupancy. Because it is NP-hard
+compilers must rely on in-exact heuristics to choose how to allocate or spill
+registers. However it is likely that your GPU compiler will pick good register
+allocation for most codebases. However if you have a particularly complex
+codebase there are manual knobs which you can tweak in source code such as the
+degree that functions are inlined or that loops are unrolled, which influence
+register allocation. Under normal circumstances these considerations can be
+left till the very end of program design/optimisation. Conversely the compiler
+can occasionally be too aggressive in spilling registers which can often be
+even worse than a drop in occupancy. Achieving good improvements usually
+requires a careful examination of the "assembly" generated by the compiler and
+is beyond the scope of this course.
+
+In summary, it is vital to be aware of the limited register and shared memory
+resources available to you when designing your kernels. This section should
+equip you well with the knowledge that when combined with the profiler
+know-how that you will learn in the
+[profiling](../section-3.01/README.md#profiling) section, will allow you to
+maximise occupancy when running your kernels.
 
 ## Memory usage
 
