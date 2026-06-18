@@ -165,9 +165,9 @@ threads in a wavefront, since threads within a wavefront execute in lock-step.
 
 **Expert point**. For completeness there is one more factor to be aware of.
 Optimal register allocation (and register spilling) is an NP-hard problem that
-is inherently linked with ideal block-size and occupancy. Because it is NP-hard
+is inherently linked with ideal block-size and occupancy. Because it is NP-hard,
 compilers must rely on in-exact heuristics to choose how to allocate or spill
-registers. However it is likely that your GPU compiler will pick good register
+registers. It is likely that your GPU compiler will pick good register
 allocation for most codebases. However if you have a particularly complex
 codebase there are manual knobs which you can tweak in source code such as the
 degree that functions are inlined or that loops are unrolled, which influence
